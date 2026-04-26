@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Registry – GiftTogether</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    .img-pick-label {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.45rem 1rem; border-radius: 8px;
+      border: 1.5px solid var(--border); background: #fff;
+      cursor: pointer; font-size: 0.88rem; font-weight: 600;
+      color: var(--text); transition: border-color 0.15s;
+    }
+    .img-pick-label:hover { border-color: var(--primary); color: var(--primary); }
+    .goal-img-preview {
+      width: 100%; max-height: 180px; object-fit: cover;
+      border-radius: 8px; margin-top: 0.5rem; display: block;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="/">🎁 GiftTogether</a>
+  <div class="nav-links">
+    <a href="/dashboard.html">← My registries</a>
+  </div>
+</nav>
+
+<div class="container page" style="max-width:600px;">
+  <h1 class="page-title">Create a registry</h1>
+  <p class="page-subtitle">Give your registry a name and add the gifts you'd love.</p>
+
+  <div id="alert" class="alert hidden"></div>
+
+  <!-- Step 1: Registry details -->
+  <div id="step1" class="card">
+    <h2 style="font-size:1.05rem;font-weight:700;margin-bottom:1rem;">Registry details</h2>
+    <div class="form-group">
+      <label for="regName">Registry name *</label>
+      <input type="text" id="regName" placeholder="e.g. Sarah's Baby Shower" />
+    </div>
+    <div class="form-group">
+      <label for="regDesc">Description <span class="text-muted">(optional)</span></label>
+      <textarea id="regDesc" placeholder="A little note for your guests..."></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="createRegistry()" id="createBtn">
+      Continue →
+    </button>
+  </div>
+
+  <!-- Step 2: Add gift goals -->
+  <div id="step2" class="hidden">
+    <div class="card" style="background:#f0fdf4;border:1.5px solid #86efac;">
+      <strong>✓ Registry created!</strong>
+      <p class="text-muted mt-1" style="font-size:0.88rem;">Now add the gifts you'd like contributions toward.</p>
+    </div>
+
+    <div class="card">
+      <h2 style="font-size:1.05rem;font-weight:700;margin-bottom:1rem;">Add a gift goal</h2>
+
+      <div class="form-group">
+        <label for="goalName">Gift name *</label>
+        <input type="text" id="goalName" placeholder="e.g. Pram / Stroller" />
+      </div>
+
+      <div class="form-group">
+        <label for="goalDesc">Description <span class="text-muted">(optional)</span></label>
+        <textarea id="goalDesc" placeholder="e.g. For content creation and app development. Any amount helps!" style="min-height:65px;"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="goalAmount">Target amount (R) *</label>
+        <input type="number" id="goalAmount" placeholder="e.g. 5000" min="1" step="0.01" />
+      </div>
+
+      <!-- Gift image upload -->
+      <div class="form-group">
+        <label>Gift image <span class="text-muted">(optional)</span></label>
+        <label class="img-pick-label" for="goalImageInput">
+          🖼 Choose image
+        </label>
+        <input type="file" id="goalImageInput" accept="image/*" style="display:none;" />
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem;">
+          JPG, PNG or WebP · max 5 MB · shown to guests on your registry page
+        </div>
+        <img id="goalImagePreview" class="goal-img-preview hidden" alt="Preview" />
+        <button type="button" id="removeGoalImageBtn" class="btn-ghost hidden" style="font-size:0.78rem;margin-top:0.25rem;">
+          ✕ Remove image
+        </button>
+      </div>
+
+      <!-- Product link -->
+      <div class="form-group">
+        <label for="goalProductLink">Product / store link <span class="text-muted">(optional)</span></label>
+        <input type="url" id="goalProductLink" placeholder="https://www.takealot.com/..." />
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem;">
+          Link to Takealot, Incredible Connection, Apple, etc.
+        </div>
+      </div>
+
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="addGoal()" id="addGoalBtn">Add gift goal</button>
+        <button class="btn btn-outline" onclick="goToDashboard()">Done – view registry</button>
+      </div>
+    </div>
+
+    <div id="goalsList"></div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  Auth.requireAuth();
+
+  let createdRegistry = null;
+  let selectedGoalImageFile = null;
+
+  // ── Image picker ────────────────────────────────────────────────────────────
+  document.getElementById('goalImageInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    selectedGoalImageFile = file;
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const preview = document.getElementById('goalImagePreview');
+      preview.src = ev.target.result;
+      preview.classList.remove('hidden');
+      document.getElementById('removeGoalImageBtn').classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById('removeGoalImageBtn').addEventListener('click', () => {
+    selectedGoalImageFile = null;
+    document.getElementById('goalImageInput').value = '';
+    document.getElementById('goalImagePreview').classList.add('hidden');
+    document.getElementById('goalImagePreview').src = '';
+    document.getElementById('removeGoalImageBtn').classList.add('hidden');
+  });
+
+  // ── Registry creation ───────────────────────────────────────────────────────
+  async function createRegistry() {
+    const alertEl = document.getElementById('alert');
+    const btn = document.getElementById('createBtn');
+    hideAlert(alertEl);
+
+    const name = document.getElementById('regName').value.trim();
+    const desc = document.getElementById('regDesc').value.trim();
+
+    if (!name) { showAlert(alertEl, 'Registry name is required.'); return; }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Creating...';
+
+    try {
+      createdRegistry = await API.createRegistry(name, desc);
+      document.getElementById('step1').classList.add('hidden');
+      document.getElementById('step2').classList.remove('hidden');
+    } catch (err) {
+      showAlert(alertEl, err.message);
+      btn.disabled = false;
+      btn.textContent = 'Continue →';
+    }
+  }
+
+  // ── Add goal ────────────────────────────────────────────────────────────────
+  async function addGoal() {
+    const alertEl = document.getElementById('alert');
+    const btn = document.getElementById('addGoalBtn');
+    hideAlert(alertEl);
+
+    const name = document.getElementById('goalName').value.trim();
+    const desc = document.getElementById('goalDesc').value.trim();
+    const amount = parseFloat(document.getElementById('goalAmount').value);
+    const productLink = document.getElementById('goalProductLink').value.trim() || null;
+
+    if (!name) { showAlert(alertEl, 'Gift name is required.'); return; }
+    if (!amount || amount <= 0) { showAlert(alertEl, 'Please enter a valid target amount.'); return; }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Adding...';
+
+    try {
+      // 1. Create the goal (no imageUrl yet — we need the goalId first)
+      const goal = await API.addGoal(createdRegistry.id, name, desc, amount, null, productLink);
+
+      // 2. Upload image if one was selected
+      if (selectedGoalImageFile) {
+        btn.innerHTML = '<span class="spinner"></span> Uploading image...';
+        try {
+          const uploaded = await API.uploadGoalImage(createdRegistry.id, goal.id, selectedGoalImageFile);
+          goal.imageUrl = uploaded.url;
+        } catch {
+          // Image upload failed — goal still saved, just without image
+        }
+      }
+
+      createdRegistry.giftGoals.push(goal);
+      renderGoals();
+
+      // Reset form
+      document.getElementById('goalName').value = '';
+      document.getElementById('goalDesc').value = '';
+      document.getElementById('goalAmount').value = '';
+      document.getElementById('goalProductLink').value = '';
+      selectedGoalImageFile = null;
+      document.getElementById('goalImageInput').value = '';
+      document.getElementById('goalImagePreview').classList.add('hidden');
+      document.getElementById('goalImagePreview').src = '';
+      document.getElementById('removeGoalImageBtn').classList.add('hidden');
+
+      showAlert(alertEl, `✓ "${goal.name}" added!`, 'success');
+      setTimeout(() => hideAlert(alertEl), 3000);
+    } catch (err) {
+      showAlert(alertEl, err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Add gift goal';
+    }
+  }
+
+  // ── Goals preview list ──────────────────────────────────────────────────────
+  function renderGoals() {
+    const list = document.getElementById('goalsList');
+    if (!createdRegistry.giftGoals.length) { list.innerHTML = ''; return; }
+    list.innerHTML = `
+      <div class="card">
+        <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:0.75rem;">Added goals</h3>
+        ${createdRegistry.giftGoals.map(g => `
+          <div class="goal-card">
+            ${g.imageUrl ? `<img src="${escHtml(g.imageUrl)}" alt="${escHtml(g.name)}" style="width:100%;max-height:140px;object-fit:cover;border-radius:8px;margin-bottom:0.6rem;" onerror="this.style.display='none'" />` : ''}
+            <div class="flex-between" style="align-items:flex-start;">
+              <div>
+                <span class="goal-name">${escHtml(g.name)}</span>
+                ${g.description ? `<p class="goal-desc">${escHtml(g.description)}</p>` : ''}
+                ${g.productLink ? `<a href="${escHtml(g.productLink)}" target="_blank" rel="noopener" style="font-size:0.78rem;">🛒 View product ↗</a>` : ''}
+              </div>
+              <span class="badge badge-purple" style="white-space:nowrap;margin-left:0.5rem;">${formatCurrency(g.targetAmount)}</span>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  function goToDashboard() {
+    window.location.href = '/dashboard.html';
+  }
+
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>

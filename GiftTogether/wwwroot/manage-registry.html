@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Registry – GiftTogether</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    body { background: #f4f3ff; }
+
+    /* ── Creator bar (top of page, above hero) ────────────────────────────── */
+    .creator-bar {
+      background: rgba(0,0,0,0.18);
+      padding: 0.5rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .creator-bar-label {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.85);
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .creator-bar-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+    /* ── Hero ─────────────────────────────────────────────────────────────── */
+    .registry-hero {
+      background: linear-gradient(160deg, #6c63ff 0%, #a78bfa 100%);
+      color: #fff;
+      padding: 0 1rem 2rem;
+      text-align: center;
+      position: relative;
+    }
+    .hero-avatar-wrap {
+      display: flex;
+      justify-content: center;
+      padding-top: 1.75rem;
+      margin-bottom: 1rem;
+      position: relative;
+      width: fit-content;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hero-avatar {
+      width: 88px; height: 88px;
+      border-radius: 50%; object-fit: cover;
+      border: 3px solid rgba(255,255,255,0.7);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    }
+    .hero-avatar-placeholder {
+      width: 88px; height: 88px; border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      border: 3px solid rgba(255,255,255,0.5);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.2rem;
+    }
+    .edit-btn {
+      position: absolute;
+      background: rgba(255,255,255,0.9);
+      border: none; border-radius: 50%;
+      width: 26px; height: 26px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 0.75rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .edit-btn:hover { background: #fff; }
+    .edit-btn-avatar { bottom: 2px; right: 2px; }
+
+    .hero-created-by {
+      font-size: 0.78rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      opacity: 0.8; margin-bottom: 0.2rem;
+      display: block;
+    }
+    /* Each hero field is a full-width block row with the edit button inline */
+    .hero-field-row {
+      display: block;
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+    .hero-field-inner {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      max-width: 92%;
+      flex-wrap: nowrap;
+    }
+    .hero-creator-name {
+      font-size: 1.15rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    .hero-registry-title {
+      font-size: 1.9rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .hero-message {
+      font-size: 0.97rem;
+      opacity: 0.92;
+      font-style: italic;
+      line-height: 1.55;
+      max-width: 480px;
+      display: inline-block;
+      text-align: center;
+    }
+    .edit-btn-inline {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 50%;
+      width: 24px; height: 24px;
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 0.7rem; color: #fff;
+      flex-shrink: 0; transition: background 0.15s;
+      vertical-align: middle;
+    }
+    .edit-btn-inline:hover { background: rgba(255,255,255,0.35); }
+
+    /* ── Progress card ────────────────────────────────────────────────────── */
+    .progress-card {
+      background: #fff; border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(108,99,255,0.13);
+      padding: 1.25rem 1.5rem;
+      margin: -1.25rem 1rem 0;
+      position: relative; z-index: 2;
+    }
+    .progress-totals {
+      display: flex; justify-content: space-between;
+      align-items: baseline; margin-bottom: 0.5rem;
+    }
+    .progress-raised { font-size: 1.35rem; font-weight: 800; color: var(--text); }
+    .progress-target { font-size: 0.88rem; color: var(--muted); }
+    .progress-wrap-lg {
+      background: #ede9fe; border-radius: 99px;
+      height: 12px; overflow: hidden; margin-bottom: 0.5rem;
+    }
+    .progress-bar-lg {
+      height: 100%;
+      background: linear-gradient(90deg, #6c63ff, #22c55e);
+      border-radius: 99px; transition: width 0.5s ease;
+    }
+    .progress-meta {
+      display: flex; justify-content: space-between;
+      font-size: 0.8rem; color: var(--muted);
+    }
+    .share-row {
+      display: flex; gap: 0.6rem; margin-top: 1rem; flex-wrap: wrap;
+    }
+    .share-row .btn { flex: 1; min-width: 120px; justify-content: center; }
+    .btn-whatsapp { background: #25d366; color: #fff; border: none; }
+    .btn-whatsapp:hover { background: #1ebe5d; }
+
+    /* ── Section heading ──────────────────────────────────────────────────── */
+    .section-heading {
+      font-size: 1.05rem; font-weight: 700; color: var(--text);
+      margin: 1.75rem 0 0.75rem; padding: 0 0.25rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    /* ── Goal card ────────────────────────────────────────────────────────── */
+    .goal-card-manage {
+      background: #fff; border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(108,99,255,0.08);
+      overflow: hidden; margin-bottom: 1.25rem;
+    }
+    .goal-img-wrap {
+      width: 100%; height: 200px; background: #ede9fe;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; position: relative;
+    }
+    .goal-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .goal-img-placeholder { font-size: 3.5rem; opacity: 0.35; }
+    .goal-img-edit-btn {
+      position: absolute; bottom: 0.6rem; right: 0.6rem;
+      background: rgba(255,255,255,0.92);
+      border: none; border-radius: 8px;
+      padding: 0.3rem 0.65rem;
+      font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; color: var(--text);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+    .goal-img-edit-btn:hover { background: #fff; }
+    .goal-body { padding: 1.1rem 1.25rem 0.5rem; }
+    .goal-title-row {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; gap: 0.5rem; margin-bottom: 0.25rem;
+    }
+    .goal-title { font-size: 1.1rem; font-weight: 700; color: var(--text); line-height: 1.3; }
+    .goal-target-badge {
+      background: #ede9fe; color: var(--primary);
+      font-size: 0.82rem; font-weight: 700;
+      padding: 0.25rem 0.65rem; border-radius: 99px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .goal-description { font-size: 0.88rem; color: var(--muted); line-height: 1.5; margin-bottom: 0.5rem; }
+    .goal-product-link-text {
+      display: inline-block; font-size: 0.8rem; font-weight: 600;
+      color: var(--primary); margin: 0.1rem 0 0.4rem; text-decoration: none;
+    }
+    .goal-product-link-text:hover { text-decoration: underline; }
+    .goal-progress-section { margin-bottom: 0.5rem; }
+    .goal-progress-numbers {
+      display: flex; justify-content: space-between;
+      font-size: 0.82rem; color: var(--muted); margin-top: 0.3rem;
+    }
+    .goal-progress-numbers strong { color: var(--text); }
+
+    /* ── Goal manage toolbar ──────────────────────────────────────────────── */
+    .goal-toolbar {
+      display: flex; gap: 0.5rem; padding: 0.75rem 1.25rem;
+      border-top: 1px solid #f0eeff; flex-wrap: wrap;
+    }
+    .btn-edit-goal {
+      flex: 1; min-width: 100px; justify-content: center;
+      padding: 0.5rem 0.75rem; font-size: 0.85rem;
+    }
+    .btn-delete-goal {
+      padding: 0.5rem 0.75rem; font-size: 0.85rem;
+      background: #fff5f5; color: var(--danger);
+      border: 1.5px solid #fecaca; border-radius: 8px;
+      cursor: pointer; font-weight: 600;
+      transition: background 0.15s;
+    }
+    .btn-delete-goal:hover { background: #fee2e2; }
+
+    /* ── Contributors ─────────────────────────────────────────────────────── */
+    .contrib-section {
+      border-top: 1px solid #f0eeff;
+      padding: 0.75rem 1.25rem 1rem;
+    }
+    .contrib-section-title {
+      font-size: 0.75rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--muted); margin-bottom: 0.6rem;
+    }
+    .contrib-row {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; padding: 0.45rem 0;
+      border-top: 1px solid #f5f3ff; font-size: 0.86rem;
+    }
+    .contrib-row:first-of-type { border-top: none; }
+    .contrib-row-name { font-weight: 600; color: var(--text); }
+    .contrib-row-msg { font-size: 0.8rem; color: var(--muted); margin-top: 0.1rem; font-style: italic; }
+    .contrib-row-date { font-size: 0.75rem; color: var(--muted); margin-top: 0.1rem; }
+    .contrib-row-amount { font-weight: 700; color: var(--primary); white-space: nowrap; margin-left: 0.75rem; }
+
+    /* ── Add goal card ────────────────────────────────────────────────────── */
+    .add-goal-card {
+      background: #fff; border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(108,99,255,0.08);
+      padding: 1.25rem; margin-bottom: 1.25rem;
+    }
+
+    /* ── Edit modal ───────────────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex; align-items: flex-end;
+      justify-content: center; z-index: 200; padding: 0;
+    }
+    @media (min-width: 520px) {
+      .modal-overlay { align-items: center; padding: 1rem; }
+    }
+    .modal-sheet {
+      background: #fff; width: 100%; max-width: 500px;
+      border-radius: 20px 20px 0 0;
+      padding: 1.5rem 1.5rem 2rem;
+      position: relative; max-height: 92vh; overflow-y: auto;
+    }
+    @media (min-width: 520px) { .modal-sheet { border-radius: 16px; } }
+    .modal-drag-handle {
+      width: 40px; height: 4px; background: var(--border);
+      border-radius: 99px; margin: 0 auto 1.25rem;
+    }
+    @media (min-width: 520px) { .modal-drag-handle { display: none; } }
+    .modal-close {
+      position: absolute; top: 1rem; right: 1rem;
+      background: #f5f3ff; border: none;
+      width: 32px; height: 32px; border-radius: 50%;
+      font-size: 1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted);
+    }
+    .modal-close:hover { background: #ede9fe; color: var(--text); }
+    .modal-title {
+      font-size: 1.1rem; font-weight: 700;
+      margin-bottom: 1.25rem; padding-right: 2rem;
+    }
+
+    /* ── Color swatch picker ──────────────────────────────────────────────── */
+    .color-swatches {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;
+    }
+    .color-swatch {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 2px solid transparent; cursor: pointer;
+      transition: transform 0.1s, border-color 0.15s;
+    }
+    .color-swatch:hover { transform: scale(1.12); }
+    .color-swatch.selected { border-color: var(--text); transform: scale(1.12); }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <a class="nav-brand" href="/">🎁 GiftTogether</a>
+  <div class="nav-links">
+    <a href="/dashboard.html">← My registries</a>
+    <button class="btn btn-outline btn-sm" onclick="Auth.logout()">Log out</button>
+  </div>
+</nav>
+
+<!-- Loading -->
+<div id="loading" style="padding:3rem 1rem;text-align:center;color:var(--muted);">Loading…</div>
+<div id="pageAlert" class="alert hidden" style="margin:1rem;"></div>
+
+<!-- Page content -->
+<div id="pageContent" class="hidden">
+
+  <!-- Hero with creator bar -->
+  <div class="registry-hero">
+    <div class="creator-bar">
+      <span class="creator-bar-label">✏️ Creator view — only you see the edit controls</span>
+      <div class="creator-bar-actions">
+        <a id="viewGuestBtn" href="#" target="_blank" class="btn btn-sm btn-outline" style="color:#fff;border-color:rgba(255,255,255,0.5);">
+          👁 Preview as guest ↗
+        </a>
+      </div>
+    </div>
+
+    <!-- Avatar -->
+    <div class="hero-avatar-wrap">
+      <div id="heroAvatar"></div>
+      <button class="edit-btn edit-btn-avatar" onclick="openModal('profile')" title="Edit profile photo & message">✏️</button>
+    </div>
+
+    <div class="hero-created-by">Created by</div>
+
+    <!-- Creator name (block row) -->
+    <div class="hero-field-row">
+      <div class="hero-field-inner">
+        <span class="hero-creator-name" id="heroCreatorName"></span>
+        <button class="edit-btn-inline" onclick="openModal('profile')" title="Edit name & profile">✏️</button>
+      </div>
+    </div>
+
+    <!-- Registry title (block row) -->
+    <div class="hero-field-row">
+      <div class="hero-field-inner">
+        <span class="hero-registry-title" id="heroRegistryTitle"></span>
+        <button class="edit-btn-inline" onclick="openModal('registry')" title="Edit registry name & description">✏️</button>
+      </div>
+    </div>
+
+    <!-- Guest message (block row) -->
+    <div class="hero-field-row" style="margin-bottom:1.25rem;">
+      <div class="hero-field-inner">
+        <span class="hero-message" id="heroMessage"></span>
+        <button class="edit-btn-inline" onclick="openModal('profile')" title="Edit message to guests">✏️</button>
+      </div>
+    </div>
+
+    <!-- Theme edit button (bottom of hero) -->
+    <div style="margin-top:0.25rem;">
+      <button onclick="openModal('theme')" style="
+        background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.4);
+        color:#fff;border-radius:8px;padding:0.35rem 0.85rem;
+        font-size:0.78rem;font-weight:600;cursor:pointer;">
+        🎨 Customize background
+      </button>
+    </div>
+  </div>
+
+  <!-- Progress + share card -->
+  <div class="container" style="padding-top:0;">
+    <div class="progress-card" id="progressCard"></div>
+
+    <!-- Gift goals section -->
+    <div class="section-heading">
+      <span>Gift goals</span>
+    </div>
+    <div id="goalsList"></div>
+
+    <!-- Add new goal -->
+    <div class="add-goal-card" id="addGoalCard">
+      <div style="font-size:0.95rem;font-weight:700;margin-bottom:0.75rem;">+ Add a gift goal</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:0.75rem;align-items:end;">
+        <div class="form-group" style="margin:0;">
+          <label>Gift name *</label>
+          <input type="text" id="newGoalName" placeholder="e.g. Laptop" />
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label>Target (R) *</label>
+          <input type="number" id="newGoalAmount" placeholder="e.g. 15000" min="1" step="0.01" />
+        </div>
+        <button class="btn btn-primary" id="addGoalBtn" onclick="addGoal()">Add</button>
+      </div>
+      <div class="form-group mt-1">
+        <label>Description <span class="text-muted">(optional)</span></label>
+        <textarea id="newGoalDesc" placeholder="What will this contribution support?" style="min-height:55px;"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Gift image <span class="text-muted">(optional)</span></label>
+        <label style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.4rem 0.9rem;border-radius:8px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-size:0.85rem;font-weight:600;color:var(--text);" for="newGoalImageInput">
+          🖼 Choose image
+        </label>
+        <input type="file" id="newGoalImageInput" accept="image/*" style="display:none;" />
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.25rem;">JPG, PNG or WebP · max 5 MB</div>
+        <img id="newGoalImagePreview" alt="Preview" style="width:100%;max-height:140px;object-fit:cover;border-radius:8px;margin-top:0.5rem;display:none;" />
+        <button type="button" id="removeNewGoalImageBtn" class="btn-ghost hidden" style="font-size:0.78rem;margin-top:0.2rem;">✕ Remove</button>
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label>Product link <span class="text-muted">(optional)</span></label>
+        <input type="url" id="newGoalProductLink" placeholder="https://takealot.com/..." />
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Edit modals ──────────────────────────────────────────────────────────── -->
+
+<!-- Profile modal -->
+<div id="modalProfile" class="modal-overlay hidden">
+  <div class="modal-sheet">
+    <div class="modal-drag-handle"></div>
+    <button class="modal-close" onclick="closeModal('profile')">✕</button>
+    <div class="modal-title">Edit profile</div>
+    <div id="modalProfileAlert" class="alert hidden"></div>
+
+    <div class="form-group">
+      <label>Profile photo <span class="text-muted">(optional)</span></label>
+      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <div id="profilePhotoPreview" style="width:64px;height:64px;border-radius:50%;overflow:hidden;border:2px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;">👤</div>
+        <div>
+          <label style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.4rem 0.9rem;border-radius:8px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-size:0.85rem;font-weight:600;color:var(--text);" for="profilePhotoInput">
+            📷 Choose photo
+          </label>
+          <input type="file" id="profilePhotoInput" accept="image/*" style="display:none;" />
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:0.25rem;">JPG, PNG or WebP · max 5 MB</div>
+          <button type="button" id="removeProfilePhotoBtn" class="btn-ghost hidden" style="font-size:0.78rem;padding:0.2rem 0;margin-top:0.15rem;">✕ Remove</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="editGuestMessage">Message to guests *</label>
+      <textarea id="editGuestMessage" placeholder="Tell your guests what this means to you…" style="min-height:90px;"></textarea>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:0.25rem;">Shown on your public registry page.</div>
+    </div>
+
+    <div style="display:flex;gap:0.6rem;">
+      <button class="btn btn-primary" style="flex:1;" id="saveProfileBtn" onclick="saveProfile()">Save</button>
+      <button class="btn btn-outline" onclick="closeModal('profile')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Registry details modal -->
+<div id="modalRegistry" class="modal-overlay hidden">
+  <div class="modal-sheet">
+    <div class="modal-drag-handle"></div>
+    <button class="modal-close" onclick="closeModal('registry')">✕</button>
+    <div class="modal-title">Edit registry details</div>
+    <div id="modalRegistryAlert" class="alert hidden"></div>
+
+    <div class="form-group">
+      <label for="editRegistryName">Registry name *</label>
+      <input type="text" id="editRegistryName" placeholder="e.g. Sarah's Baby Shower" />
+    </div>
+    <div class="form-group">
+      <label for="editRegistryDesc">Description <span class="text-muted">(optional)</span></label>
+      <textarea id="editRegistryDesc" placeholder="A little note for your guests…" style="min-height:70px;"></textarea>
+    </div>
+
+    <div style="display:flex;gap:0.6rem;">
+      <button class="btn btn-primary" style="flex:1;" id="saveRegistryBtn" onclick="saveRegistry()">Save</button>
+      <button class="btn btn-outline" onclick="closeModal('registry')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Goal edit modal -->
+<div id="modalGoal" class="modal-overlay hidden">
+  <div class="modal-sheet">
+    <div class="modal-drag-handle"></div>
+    <button class="modal-close" onclick="closeModal('goal')">✕</button>
+    <div class="modal-title">Edit gift goal</div>
+    <div id="modalGoalAlert" class="alert hidden"></div>
+    <input type="hidden" id="editGoalId" />
+
+    <div class="form-group">
+      <label for="editGoalName">Gift name *</label>
+      <input type="text" id="editGoalName" />
+    </div>
+    <div class="form-group">
+      <label for="editGoalDesc">Description <span class="text-muted">(optional)</span></label>
+      <textarea id="editGoalDesc" style="min-height:70px;"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="editGoalAmount">Target amount (R) *</label>
+      <input type="number" id="editGoalAmount" min="1" step="0.01" />
+    </div>
+    <div class="form-group">
+      <label for="editGoalProductLink">Product link <span class="text-muted">(optional)</span></label>
+      <input type="url" id="editGoalProductLink" placeholder="https://takealot.com/..." />
+    </div>
+    <div class="form-group">
+      <label>Gift image <span class="text-muted">(optional — upload to replace)</span></label>
+      <div id="editGoalCurrentImg" style="margin-bottom:0.5rem;"></div>
+      <label style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.4rem 0.9rem;border-radius:8px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-size:0.85rem;font-weight:600;color:var(--text);" for="editGoalImageInput">
+        🖼 Choose new image
+      </label>
+      <input type="file" id="editGoalImageInput" accept="image/*" style="display:none;" />
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:0.25rem;">JPG, PNG or WebP · max 5 MB</div>
+      <img id="editGoalImagePreview" alt="New image preview" style="width:100%;max-height:140px;object-fit:cover;border-radius:8px;margin-top:0.5rem;display:none;" />
+    </div>
+
+    <div style="display:flex;gap:0.6rem;">
+      <button class="btn btn-primary" style="flex:1;" id="saveGoalBtn" onclick="saveGoal()">Save</button>
+      <button class="btn btn-outline" onclick="closeModal('goal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Theme modal -->
+<div id="modalTheme" class="modal-overlay hidden">
+  <div class="modal-sheet">
+    <div class="modal-drag-handle"></div>
+    <button class="modal-close" onclick="closeModal('theme')">✕</button>
+    <div class="modal-title">Customize hero background</div>
+    <div id="modalThemeAlert" class="alert hidden"></div>
+
+    <!-- Color swatches -->
+    <div class="form-group">
+      <label>Choose a color</label>
+      <div class="color-swatches" id="colorSwatches"></div>
+      <div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.25rem;">
+        <input type="color" id="customColorPicker" value="#6c63ff"
+          style="width:36px;height:36px;border:none;border-radius:50%;cursor:pointer;padding:0;background:none;" />
+        <label for="customColorPicker" style="font-size:0.82rem;color:var(--muted);">Custom color</label>
+        <span id="customColorHex" style="font-size:0.82rem;color:var(--muted);font-family:monospace;">#6c63ff</span>
+      </div>
+    </div>
+
+    <div style="font-size:0.8rem;color:var(--muted);margin:-0.25rem 0 0.75rem;">— or —</div>
+
+    <!-- Hero image upload -->
+    <div class="form-group">
+      <label>Upload a background image <span class="text-muted">(replaces color)</span></label>
+      <label style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.4rem 0.9rem;border-radius:8px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-size:0.85rem;font-weight:600;color:var(--text);" for="heroImageInput">
+        🖼 Choose image
+      </label>
+      <input type="file" id="heroImageInput" accept="image/*" style="display:none;" />
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:0.25rem;">JPG, PNG or WebP · max 8 MB</div>
+      <img id="heroImagePreview" alt="Preview" style="width:100%;max-height:120px;object-fit:cover;border-radius:8px;margin-top:0.5rem;display:none;" />
+      <button type="button" id="removeHeroImageBtn" class="btn-ghost hidden" style="font-size:0.78rem;margin-top:0.2rem;">✕ Remove image (use color instead)</button>
+    </div>
+
+    <div style="display:flex;gap:0.6rem;">
+      <button class="btn btn-primary" style="flex:1;" id="saveThemeBtn" onclick="saveTheme()">Save</button>
+      <button class="btn btn-outline" onclick="closeModal('theme')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+
+<script>
+  Auth.requireAuth();
+
+  const params = new URLSearchParams(location.search);
+  const registryId = params.get('id');
+  if (!registryId) window.location.href = '/dashboard.html';
+
+  let registry = null;
+
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Modal open/close ────────────────────────────────────────────────────────
+  function openModal(type, goalId) {
+    if (type === 'profile') {
+      // Pre-fill from current registry data
+      const c = registry.creator;
+      const preview = document.getElementById('profilePhotoPreview');
+      if (c.profileImageUrl) {
+        preview.innerHTML = `<img src="${escHtml(c.profileImageUrl)}" style="width:100%;height:100%;object-fit:cover;" />`;
+        document.getElementById('profilePhotoInput').dataset.currentUrl = c.profileImageUrl;
+        document.getElementById('removeProfilePhotoBtn').classList.remove('hidden');
+      } else {
+        preview.innerHTML = '👤';
+        document.getElementById('profilePhotoInput').dataset.currentUrl = '';
+        document.getElementById('removeProfilePhotoBtn').classList.add('hidden');
+      }
+      document.getElementById('editGuestMessage').value = c.guestMessage || '';
+      document.getElementById('profilePhotoInput').value = '';
+      hideAlert(document.getElementById('modalProfileAlert'));
+      document.getElementById('modalProfile').classList.remove('hidden');
+
+    } else if (type === 'registry') {
+      document.getElementById('editRegistryName').value = registry.name;
+      document.getElementById('editRegistryDesc').value = registry.description || '';
+      hideAlert(document.getElementById('modalRegistryAlert'));
+      document.getElementById('modalRegistry').classList.remove('hidden');
+
+    } else if (type === 'goal') {
+      const g = registry.giftGoals.find(x => x.id === goalId);
+      if (!g) return;
+      document.getElementById('editGoalId').value = g.id;
+      document.getElementById('editGoalName').value = g.name;
+      document.getElementById('editGoalDesc').value = g.description || '';
+      document.getElementById('editGoalAmount').value = g.targetAmount;
+      document.getElementById('editGoalProductLink').value = g.productLink || '';
+      document.getElementById('editGoalImageInput').value = '';
+      document.getElementById('editGoalImagePreview').style.display = 'none';
+      document.getElementById('editGoalImagePreview').src = '';
+      // Show current image thumbnail
+      const curImg = document.getElementById('editGoalCurrentImg');
+      curImg.innerHTML = g.imageUrl
+        ? `<img src="${escHtml(g.imageUrl)}" style="width:100%;max-height:120px;object-fit:cover;border-radius:8px;" onerror="this.style.display='none'" />`
+        : '<span style="font-size:0.8rem;color:var(--muted);">No image yet</span>';
+      hideAlert(document.getElementById('modalGoalAlert'));
+      document.getElementById('modalGoal').classList.remove('hidden');
+    } else if (type === 'theme') {
+      // Pre-fill color picker with current value
+      const currentColor = registry.heroBackgroundColor || '#6c63ff';
+      document.getElementById('customColorPicker').value = currentColor;
+      document.getElementById('customColorHex').textContent = currentColor;
+      document.getElementById('heroImageInput').value = '';
+      document.getElementById('heroImagePreview').style.display = 'none';
+      document.getElementById('removeHeroImageBtn').classList.add('hidden');
+
+      // Mark selected swatch
+      document.querySelectorAll('.color-swatch').forEach(s => {
+        s.classList.toggle('selected', s.dataset.color === currentColor);
+      });
+
+      // Show current hero image if any
+      if (registry.heroImageUrl) {
+        const p = document.getElementById('heroImagePreview');
+        p.src = registry.heroImageUrl;
+        p.style.display = 'block';
+        document.getElementById('removeHeroImageBtn').classList.remove('hidden');
+      }
+
+      hideAlert(document.getElementById('modalThemeAlert'));
+      document.getElementById('modalTheme').classList.remove('hidden');
+    }
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal(type) {
+    document.getElementById(`modal${type.charAt(0).toUpperCase() + type.slice(1)}`).classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  // Close on backdrop click
+  ['modalProfile','modalRegistry','modalGoal','modalTheme'].forEach(id => {
+    document.getElementById(id).addEventListener('click', (e) => {
+      if (e.target.id === id) {
+        e.target.classList.add('hidden');
+        document.body.style.overflow = '';
+      }
+    });
+  });
+
+  // ── Profile photo picker ────────────────────────────────────────────────────
+  document.getElementById('profilePhotoInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      document.getElementById('profilePhotoPreview').innerHTML =
+        `<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover;" />`;
+      document.getElementById('removeProfilePhotoBtn').classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+  });
+  document.getElementById('removeProfilePhotoBtn').addEventListener('click', () => {
+    document.getElementById('profilePhotoInput').value = '';
+    document.getElementById('profilePhotoInput').dataset.currentUrl = '';
+    document.getElementById('profilePhotoPreview').innerHTML = '👤';
+    document.getElementById('removeProfilePhotoBtn').classList.add('hidden');
+  });
+
+  // ── Edit goal image picker ──────────────────────────────────────────────────
+  document.getElementById('editGoalImageInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const p = document.getElementById('editGoalImagePreview');
+      p.src = ev.target.result;
+      p.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // ── Add goal image picker ───────────────────────────────────────────────────
+  document.getElementById('newGoalImageInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const p = document.getElementById('newGoalImagePreview');
+      p.src = ev.target.result;
+      p.style.display = 'block';
+      document.getElementById('removeNewGoalImageBtn').classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+  });
+  document.getElementById('removeNewGoalImageBtn').addEventListener('click', () => {
+    document.getElementById('newGoalImageInput').value = '';
+    const p = document.getElementById('newGoalImagePreview');
+    p.src = ''; p.style.display = 'none';
+    document.getElementById('removeNewGoalImageBtn').classList.add('hidden');
+  });
+
+  // ── Save profile ────────────────────────────────────────────────────────────
+  async function saveProfile() {
+    const alertEl = document.getElementById('modalProfileAlert');
+    const btn = document.getElementById('saveProfileBtn');
+    hideAlert(alertEl);
+
+    const guestMessage = document.getElementById('editGuestMessage').value.trim();
+    if (!guestMessage) { showAlert(alertEl, 'Please write a message to your guests.'); return; }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Saving…';
+
+    try {
+      const photoInput = document.getElementById('profilePhotoInput');
+      const newFile = photoInput.files[0];
+      let profileImageUrl = photoInput.dataset.currentUrl || null;
+
+      if (newFile) {
+        btn.innerHTML = '<span class="spinner"></span> Uploading…';
+        const up = await API.uploadPhoto(newFile);
+        profileImageUrl = up.url;
+      }
+
+      await API.updateProfile(profileImageUrl, guestMessage);
+      closeModal('profile');
+      await loadRegistry();
+    } catch (err) {
+      showAlert(alertEl, err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Save';
+    }
+  }
+
+  // ── Save registry details ───────────────────────────────────────────────────
+  async function saveRegistry() {
+    const alertEl = document.getElementById('modalRegistryAlert');
+    const btn = document.getElementById('saveRegistryBtn');
+    hideAlert(alertEl);
+
+    const name = document.getElementById('editRegistryName').value.trim();
+    const desc = document.getElementById('editRegistryDesc').value.trim();
+    if (!name) { showAlert(alertEl, 'Registry name is required.'); return; }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Saving…';
+
+    try {
+      await API.updateRegistry(registry.id, name, desc, null, null);
+      closeModal('registry');
+      await loadRegistry();
+    } catch (err) {
+      showAlert(alertEl, err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Save';
+    }
+  }
+
+  // ── Save theme ──────────────────────────────────────────────────────────────
+  async function saveTheme() {
+    const alertEl = document.getElementById('modalThemeAlert');
+    const btn = document.getElementById('saveThemeBtn');
+    hideAlert(alertEl);
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Saving…';
+
+    try {
+      const imageFile = document.getElementById('heroImageInput').files[0] || null;
+      const removeImage = document.getElementById('removeHeroImageBtn').classList.contains('hidden')
+        && !imageFile && registry.heroImageUrl;
+
+      if (imageFile) {
+        // Upload image — this saves heroImageUrl on the registry
+        btn.innerHTML = '<span class="spinner"></span> Uploading…';
+        await API.uploadHeroImage(registry.id, imageFile);
+        // Clear color when image is set
+        await API.updateRegistry(registry.id, null, null, null, null);
+      } else {
+        // Use color (or clear image if remove was clicked)
+        const color = document.getElementById('customColorPicker').value;
+        const heroImageUrl = removeImage ? '' : null; // '' = clear, null = don't change
+        await API.updateRegistry(registry.id, null, null, color, heroImageUrl);
+      }
+
+      closeModal('theme');
+      await loadRegistry();
+    } catch (err) {
+      showAlert(alertEl, err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Save';
+    }
+  }
+
+  // ── Save goal edits ─────────────────────────────────────────────────────────
+  async function saveGoal() {
+    const alertEl = document.getElementById('modalGoalAlert');
+    const btn = document.getElementById('saveGoalBtn');
+    hideAlert(alertEl);
+
+    const goalId = parseInt(document.getElementById('editGoalId').value);
+    const name = document.getElementById('editGoalName').value.trim();
+    const desc = document.getElementById('editGoalDesc').value.trim();
+    const amount = parseFloat(document.getElementById('editGoalAmount').value);
+    const productLink = document.getElementById('editGoalProductLink').value.trim() || null;
+    const imageFile = document.getElementById('editGoalImageInput').files[0] || null;
+
+    if (!name) { showAlert(alertEl, 'Gift name is required.'); return; }
+    if (!amount || amount <= 0) { showAlert(alertEl, 'Please enter a valid target amount.'); return; }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Saving…';
+
+    try {
+      await API.updateGoal(registry.id, goalId, { name, description: desc, targetAmount: amount, productLink });
+
+      if (imageFile) {
+        btn.innerHTML = '<span class="spinner"></span> Uploading image…';
+        try {
+          await API.uploadGoalImage(registry.id, goalId, imageFile);
+        } catch { /* image upload failed — other fields still saved */ }
+      }
+
+      closeModal('goal');
+      await loadRegistry();
+    } catch (err) {
+      showAlert(alertEl, err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Save';
+    }
+  }
+
+  // ── Add new goal ────────────────────────────────────────────────────────────
+  async function addGoal() {
+    const alertEl = document.getElementById('pageAlert');
+    const btn = document.getElementById('addGoalBtn');
+    hideAlert(alertEl);
+
+    const name = document.getElementById('newGoalName').value.trim();
+    const desc = document.getElementById('newGoalDesc').value.trim();
+    const amount = parseFloat(document.getElementById('newGoalAmount').value);
+    const productLink = document.getElementById('newGoalProductLink').value.trim() || null;
+    const imageFile = document.getElementById('newGoalImageInput').files[0] || null;
+
+    if (!name) { showAlert(alertEl, 'Gift name is required.'); return; }
+    if (!amount || amount <= 0) { showAlert(alertEl, 'Please enter a valid target amount.'); return; }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>';
+
+    try {
+      const goal = await API.addGoal(registry.id, name, desc, amount, null, productLink);
+
+      if (imageFile) {
+        btn.innerHTML = '<span class="spinner"></span> Uploading…';
+        try { await API.uploadGoalImage(registry.id, goal.id, imageFile); } catch {}
+      }
+
+      // Reset form
+      ['newGoalName','newGoalDesc','newGoalProductLink'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('newGoalAmount').value = '';
+      document.getElementById('newGoalImageInput').value = '';
+      document.getElementById('newGoalImagePreview').style.display = 'none';
+      document.getElementById('removeNewGoalImageBtn').classList.add('hidden');
+
+      await loadRegistry();
+      showAlert(alertEl, `✓ "${goal.name}" added!`, 'success');
+      setTimeout(() => hideAlert(alertEl), 3000);
+      // Scroll to the new goal
+      document.getElementById('goalsList').lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } catch (err) {
+      showAlert(alertEl, err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Add';
+    }
+  }
+
+  // ── Delete goal ─────────────────────────────────────────────────────────────
+  async function deleteGoal(goalId, goalName) {
+    if (!confirm(`Remove "${goalName}"? This cannot be undone.`)) return;
+    try {
+      await API.deleteGoal(registry.id, goalId);
+      await loadRegistry();
+    } catch (err) {
+      showAlert(document.getElementById('pageAlert'), err.message);
+    }
+  }
+
+  // ── Share helpers ───────────────────────────────────────────────────────────
+  function copyShareLink(url, btn) {
+    navigator.clipboard.writeText(url).then(() => {
+      const orig = btn.innerHTML;
+      btn.innerHTML = '✓ Copied!';
+      btn.disabled = true;
+      setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 2500);
+    });
+  }
+
+  // ── Render ──────────────────────────────────────────────────────────────────
+  function renderPage() {
+    const c = registry.creator;
+    const totalRaised = registry.giftGoals.reduce((s, g) => s + g.totalRaised, 0);
+    const totalTarget = registry.giftGoals.reduce((s, g) => s + g.targetAmount, 0);
+    const pct = progressPct(totalRaised, totalTarget);
+    const shareUrl = `${location.origin}/r/${registry.slug}`;
+    const waUrl = `https://wa.me/?text=${encodeURIComponent(shareUrl)}`;
+
+    // Guest preview link
+    document.getElementById('viewGuestBtn').href = `/r/${registry.slug}`;
+
+    // Apply hero background: image > color > default gradient
+    const heroEl = document.querySelector('.registry-hero');
+    if (registry.heroImageUrl) {
+      heroEl.style.background = `linear-gradient(rgba(0,0,0,0.38), rgba(0,0,0,0.38)), url('${registry.heroImageUrl}') center/cover no-repeat`;
+    } else if (registry.heroBackgroundColor) {
+      heroEl.style.background = registry.heroBackgroundColor;
+    } else {
+      heroEl.style.background = '';  // fall back to CSS default gradient
+    }
+
+    // Avatar
+    document.getElementById('heroAvatar').innerHTML = c.profileImageUrl
+      ? `<img class="hero-avatar" src="${escHtml(c.profileImageUrl)}" alt="${escHtml(c.name)}"
+           onerror="this.outerHTML='<div class=\\'hero-avatar-placeholder\\'>👤</div>'" />`
+      : `<div class="hero-avatar-placeholder">👤</div>`;
+
+    document.getElementById('heroCreatorName').textContent = c.name;
+    document.getElementById('heroRegistryTitle').textContent = registry.name;
+    document.getElementById('heroMessage').innerHTML = c.guestMessage
+      ? `"${escHtml(c.guestMessage)}"`
+      : '<span style="opacity:0.6;font-style:normal;">No message yet — click ✏️ to add one</span>';
+
+    // Progress card
+    document.getElementById('progressCard').innerHTML = `
+      <div class="progress-totals">
+        <span class="progress-raised">${formatCurrency(totalRaised)}</span>
+        <span class="progress-target">of ${formatCurrency(totalTarget)}</span>
+      </div>
+      <div class="progress-wrap-lg">
+        <div class="progress-bar-lg" style="width:${pct}%"></div>
+      </div>
+      <div class="progress-meta">
+        <span>${pct}% funded</span>
+        <span>${registry.giftGoals.length} gift goal${registry.giftGoals.length !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="share-row">
+        <button class="btn btn-outline" onclick="copyShareLink('${escHtml(shareUrl)}', this)">🔗 Copy link</button>
+        <a class="btn btn-whatsapp" href="${escHtml(waUrl)}" target="_blank" rel="noopener noreferrer">💬 Share on WhatsApp</a>
+      </div>
+    `;
+
+    // Goal cards
+    document.getElementById('goalsList').innerHTML = registry.giftGoals.length
+      ? registry.giftGoals.map(renderGoalCard).join('')
+      : `<p class="text-muted" style="padding:0.5rem 0.25rem;">No gift goals yet — add one below.</p>`;
+
+    document.getElementById('pageContent').classList.remove('hidden');
+    document.title = `Manage: ${registry.name} – GiftTogether`;
+  }
+
+  function renderGoalCard(g) {
+    const gPct = progressPct(g.totalRaised, g.targetAmount);
+
+    const imageSection = `
+      <div class="goal-img-wrap">
+        ${g.imageUrl
+          ? `<img src="${escHtml(g.imageUrl)}" alt="${escHtml(g.name)}"
+               onerror="this.parentElement.innerHTML='<div class=\\'goal-img-placeholder\\'>🎁</div>'" />`
+          : `<div class="goal-img-placeholder">🎁</div>`}
+        <button class="goal-img-edit-btn" onclick="openModal('goal', ${g.id})">✏️ Edit</button>
+      </div>`;
+
+    const contribsHtml = g.contributions.length
+      ? g.contributions.slice(0, 4).map(c => `
+          <div class="contrib-row">
+            <div>
+              <div class="contrib-row-name">${escHtml(c.contributorName)}</div>
+              ${c.message ? `<div class="contrib-row-msg">"${escHtml(c.message)}"</div>` : ''}
+              <div class="contrib-row-date">${formatDate(c.createdAt)}</div>
+            </div>
+            <div class="contrib-row-amount">${formatCurrency(c.amount)}</div>
+          </div>`).join('')
+        + (g.contributions.length > 4
+            ? `<p class="text-muted" style="font-size:0.78rem;padding-top:0.35rem;">+${g.contributions.length - 4} more</p>`
+            : '')
+      : `<p style="font-size:0.85rem;color:var(--muted);padding:0.25rem 0;">No contributions yet.</p>`;
+
+    return `
+      <div class="goal-card-manage">
+        ${imageSection}
+        <div class="goal-body">
+          <div class="goal-title-row">
+            <div class="goal-title">${escHtml(g.name)}</div>
+            <span class="goal-target-badge">${formatCurrency(g.targetAmount)}</span>
+          </div>
+          ${g.productLink
+            ? `<a class="goal-product-link-text" href="${escHtml(g.productLink)}" target="_blank" rel="noopener">View product ↗</a>`
+            : ''}
+          ${g.description
+            ? `<p class="goal-description">${escHtml(g.description)}</p>`
+            : ''}
+          <div class="goal-progress-section">
+            <div class="progress-wrap">
+              <div class="progress-bar" style="width:${gPct}%"></div>
+            </div>
+            <div class="goal-progress-numbers">
+              <span><strong>${formatCurrency(g.totalRaised)}</strong> raised</span>
+              <span>${gPct}%</span>
+            </div>
+          </div>
+        </div>
+        <div class="goal-toolbar">
+          <button class="btn btn-outline btn-edit-goal" onclick="openModal('goal', ${g.id})">✏️ Edit goal</button>
+          <button class="btn-delete-goal" onclick="deleteGoal(${g.id}, '${escHtml(g.name).replace(/'/g,"\\'")}')">🗑 Remove</button>
+        </div>
+        <div class="contrib-section">
+          <div class="contrib-section-title">
+            ${g.contributions.length} contribution${g.contributions.length !== 1 ? 's' : ''}
+          </div>
+          ${contribsHtml}
+        </div>
+      </div>`;
+  }
+
+  // ── Colour swatches + hero image picker init ────────────────────────────────
+  const PRESET_COLORS = [
+    '#6c63ff','#a78bfa','#ec4899','#f97316','#eab308',
+    '#22c55e','#14b8a6','#3b82f6','#1e293b','#be185d'
+  ];
+  const swatchContainer = document.getElementById('colorSwatches');
+  PRESET_COLORS.forEach(color => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'color-swatch';
+    btn.dataset.color = color;
+    btn.style.background = color;
+    btn.title = color;
+    btn.addEventListener('click', () => {
+      document.getElementById('customColorPicker').value = color;
+      document.getElementById('customColorHex').textContent = color;
+      document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+    swatchContainer.appendChild(btn);
+  });
+
+  document.getElementById('customColorPicker').addEventListener('input', (e) => {
+    document.getElementById('customColorHex').textContent = e.target.value;
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+  });
+
+  document.getElementById('heroImageInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const p = document.getElementById('heroImagePreview');
+      p.src = ev.target.result;
+      p.style.display = 'block';
+      document.getElementById('removeHeroImageBtn').classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById('removeHeroImageBtn').addEventListener('click', () => {
+    document.getElementById('heroImageInput').value = '';
+    const p = document.getElementById('heroImagePreview');
+    p.src = ''; p.style.display = 'none';
+    document.getElementById('removeHeroImageBtn').classList.add('hidden');
+  });
+
+  // ── Load ────────────────────────────────────────────────────────────────────
+  async function loadRegistry() {
+    try {
+      const registries = await API.getMyRegistries();
+      registry = registries.find(r => r.id === parseInt(registryId));
+      if (!registry) { window.location.href = '/dashboard.html'; return; }
+      document.getElementById('loading').classList.add('hidden');
+      renderPage();
+    } catch (err) {
+      document.getElementById('loading').classList.add('hidden');
+      showAlert(document.getElementById('pageAlert'), err.message);
+    }
+  }
+
+  loadRegistry();
+</script>
+</body>
+</html>

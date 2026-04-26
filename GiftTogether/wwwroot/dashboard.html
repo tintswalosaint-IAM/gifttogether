@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Registries – GiftTogether</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="/">🎁 GiftTogether</a>
+  <div class="nav-links">
+    <span class="text-muted" id="navName" style="font-size:0.88rem;"></span>
+    <button class="btn btn-outline btn-sm" onclick="logout()">Log out</button>
+  </div>
+</nav>
+
+<div class="container page">
+  <div class="flex-between" style="margin-bottom:1.5rem;">
+    <div>
+      <h1 class="page-title">My Registries</h1>
+      <p class="page-subtitle">Manage your gift registries.</p>
+    </div>
+    <a href="/create-registry.html" class="btn btn-primary">+ New registry</a>
+  </div>
+
+  <div id="alert" class="alert hidden"></div>
+  <div id="loading" class="text-muted">Loading...</div>
+  <div id="registryList"></div>
+  <div id="empty" class="card text-center hidden" style="padding:2.5rem;">
+    <div style="font-size:2.5rem;margin-bottom:0.75rem;">🎁</div>
+    <strong>No registries yet</strong>
+    <p class="text-muted mt-1" style="font-size:0.9rem;">Create your first registry to get started.</p>
+    <a href="/create-registry.html" class="btn btn-primary mt-2">Create a registry</a>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const user = Auth.requireAuth();
+  if (!user) throw new Error(); // requireAuth already redirected
+
+  document.getElementById('navName').textContent = `Hi, ${user.name.split(' ')[0]}`;
+
+  function logout() {
+    Auth.logout();
+  }
+
+  function copyLink(slug) {
+    const url = `${location.origin}/r/${slug}`;
+    navigator.clipboard.writeText(url).then(() => {
+      showAlert(document.getElementById('alert'), '✓ Link copied to clipboard!', 'success');
+      setTimeout(() => hideAlert(document.getElementById('alert')), 3000);
+    });
+  }
+
+  async function deleteRegistry(id, name) {
+    if (!confirm(`Delete registry "${name}"? This cannot be undone.`)) return;
+    try {
+      await API.deleteRegistry(id);
+      loadRegistries();
+    } catch (err) {
+      showAlert(document.getElementById('alert'), err.message);
+    }
+  }
+
+  function renderRegistry(r) {
+    const totalRaised = r.giftGoals.reduce((s, g) => s + g.totalRaised, 0);
+    const totalTarget = r.giftGoals.reduce((s, g) => s + g.targetAmount, 0);
+    const pct = progressPct(totalRaised, totalTarget);
+    const shareUrl = `${location.origin}/r/${r.slug}`;
+
+    return `
+      <div class="card">
+        <div class="flex-between" style="margin-bottom:0.5rem;">
+          <h2 style="font-size:1.15rem;font-weight:700;">${escHtml(r.name)}</h2>
+          <div style="display:flex;gap:0.5rem;">
+            <a href="/manage-registry.html?id=${r.id}" class="btn btn-outline btn-sm">Manage</a>
+            <button class="btn btn-ghost btn-sm" onclick="deleteRegistry(${r.id}, '${escHtml(r.name).replace(/'/g,"\\'")}')">🗑</button>
+          </div>
+        </div>
+        ${r.description ? `<p class="text-muted" style="font-size:0.88rem;margin-bottom:0.75rem;">${escHtml(r.description)}</p>` : ''}
+        <div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.5rem;">
+          ${r.giftGoals.length} goal${r.giftGoals.length !== 1 ? 's' : ''} &nbsp;·&nbsp;
+          <strong style="color:var(--text);">${formatCurrency(totalRaised)}</strong> raised of ${formatCurrency(totalTarget)}
+        </div>
+        <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
+        <div class="share-box mt-2">
+          <span>${shareUrl}</span>
+          <button class="btn btn-sm btn-outline" onclick="copyLink('${r.slug}')">Copy link</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  async function loadRegistries() {
+    const loading = document.getElementById('loading');
+    const list = document.getElementById('registryList');
+    const empty = document.getElementById('empty');
+    loading.classList.remove('hidden');
+    list.innerHTML = '';
+    empty.classList.add('hidden');
+
+    try {
+      const registries = await API.getMyRegistries();
+      loading.classList.add('hidden');
+      if (registries.length === 0) {
+        empty.classList.remove('hidden');
+      } else {
+        list.innerHTML = registries.map(renderRegistry).join('');
+      }
+    } catch (err) {
+      loading.classList.add('hidden');
+      showAlert(document.getElementById('alert'), err.message);
+    }
+  }
+
+  loadRegistries();
+</script>
+</body>
+</html>

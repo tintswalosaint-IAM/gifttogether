@@ -1,0 +1,19 @@
+## Build output
+bin/
+obj/
+
+## SQLite database files
+*.db
+*.db-shm
+*.db-wal
+
+## Uploaded files (not committed — use persistent disk or cloud storage)
+wwwroot/uploads/*
+!wwwroot/uploads/.gitkeep
+
+## .NET secrets
+appsettings.Development.json
+
+## OS
+.DS_Store
+Thumbs.db

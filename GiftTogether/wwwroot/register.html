@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account – GiftTogether</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    .photo-picker { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .photo-preview {
+      width: 72px; height: 72px; border-radius: 50%;
+      object-fit: cover; border: 2px solid var(--border);
+      background: var(--bg); display: flex; align-items: center;
+      justify-content: center; font-size: 1.8rem; flex-shrink: 0;
+      overflow: hidden;
+    }
+    .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .photo-pick-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.45rem 1rem; border-radius: 8px; border: 1.5px solid var(--border);
+      background: #fff; cursor: pointer; font-size: 0.88rem; font-weight: 600;
+      color: var(--text); transition: border-color 0.15s;
+    }
+    .photo-pick-btn:hover { border-color: var(--primary); color: var(--primary); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="/">🎁 GiftTogether</a>
+  <div class="nav-links">
+    <a href="/login.html">Log in</a>
+  </div>
+</nav>
+
+<div class="auth-wrap" style="max-width:480px;">
+  <div class="card">
+    <h1 class="page-title">Create account</h1>
+    <p class="page-subtitle">Start building your gift registry.</p>
+
+    <div id="alert" class="alert hidden"></div>
+
+    <form id="registerForm">
+
+      <!-- ── Account details ─────────────────────────────────────────── -->
+      <div class="form-group">
+        <label for="name">Full name *</label>
+        <input type="text" id="name" placeholder="Jane Smith" required autocomplete="name" />
+      </div>
+      <div class="form-group">
+        <label for="email">Email address *</label>
+        <input type="email" id="email" placeholder="jane@example.com" required autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label for="password">Password * <span class="text-muted">(min 6 characters)</span></label>
+        <input type="password" id="password" placeholder="••••••••" required autocomplete="new-password" />
+      </div>
+
+      <hr class="divider" />
+
+      <!-- ── Profile – shown on your public registry page ───────────── -->
+      <p style="font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);margin-bottom:0.75rem;">
+        Your public profile
+      </p>
+
+      <!-- Profile photo -->
+      <div class="form-group">
+        <label>Profile photo <span class="text-muted">(optional)</span></label>
+        <div class="photo-picker">
+          <div class="photo-preview" id="photoPreview">👤</div>
+          <div>
+            <label class="photo-pick-btn" for="photoInput">
+              📷 Choose photo
+            </label>
+            <input type="file" id="photoInput" accept="image/*" style="display:none;" />
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:0.35rem;">
+              JPG, PNG or WebP · max 5 MB
+            </div>
+            <button type="button" id="removePhotoBtn" class="btn-ghost hidden" style="font-size:0.78rem;padding:0.2rem 0;margin-top:0.2rem;">
+              ✕ Remove
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message to guests — required -->
+      <div class="form-group">
+        <label for="guestMessage">Message to guests *</label>
+        <textarea
+          id="guestMessage"
+          placeholder="Tell your guests what this means to you…"
+          style="min-height:90px;"
+          required
+        ></textarea>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:0.3rem;">
+          This message is shown on your registry page and helps guests understand your story.
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%" id="submitBtn">
+        Create account
+      </button>
+    </form>
+
+    <p class="text-center mt-2" style="font-size:0.88rem;">
+      Already have an account? <a href="/login.html">Log in</a>
+    </p>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  Auth.redirectIfLoggedIn();
+
+  // ── Photo picker preview ──────────────────────────────────────────────────
+  let selectedPhotoFile = null;
+
+  document.getElementById('photoInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    selectedPhotoFile = file;
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const preview = document.getElementById('photoPreview');
+      preview.innerHTML = `<img src="${ev.target.result}" alt="Preview" />`;
+      document.getElementById('removePhotoBtn').classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById('removePhotoBtn').addEventListener('click', () => {
+    selectedPhotoFile = null;
+    document.getElementById('photoInput').value = '';
+    document.getElementById('photoPreview').innerHTML = '👤';
+    document.getElementById('removePhotoBtn').classList.add('hidden');
+  });
+
+  // ── Form submit ───────────────────────────────────────────────────────────
+  document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const alertEl = document.getElementById('alert');
+    const btn = document.getElementById('submitBtn');
+    hideAlert(alertEl);
+
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const guestMessage = document.getElementById('guestMessage').value.trim();
+
+    if (!guestMessage) {
+      showAlert(alertEl, 'Please write a message to your guests.');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Creating account…';
+
+    try {
+      // 1. Upload photo first (if one was selected)
+      let profileImageUrl = null;
+      if (selectedPhotoFile) {
+        btn.innerHTML = '<span class="spinner"></span> Uploading photo…';
+        // We need a token first — register without photo, then upload, then update
+        // So: register → get token → upload → patch profile
+        const tempData = await API.register(name, email, password, null, guestMessage);
+        Auth.save(tempData);
+
+        try {
+          const uploaded = await API.uploadPhoto(selectedPhotoFile);
+          profileImageUrl = uploaded.url;
+          await API.updateProfile(profileImageUrl, guestMessage);
+        } catch {
+          // Photo upload failed — account still created, just no photo
+        }
+
+        window.location.href = '/dashboard.html';
+        return;
+      }
+
+      // 2. No photo — single request
+      const data = await API.register(name, email, password, null, guestMessage);
+      Auth.save(data);
+      window.location.href = '/dashboard.html';
+
+    } catch (err) {
+      showAlert(alertEl, err.message);
+      btn.disabled = false;
+      btn.textContent = 'Create account';
+    }
+  });
+</script>
+</body>
+</html>

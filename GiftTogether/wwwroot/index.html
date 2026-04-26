@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GiftTogether – Group Gifting Made Simple</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="/">🎁 GiftTogether</a>
+  <div class="nav-links" id="navLinks">
+    <a href="/login.html">Log in</a>
+    <a href="/register.html" class="btn btn-primary btn-sm">Get started</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>Group gifting,<br>done right.</h1>
+  <p>Create a registry, share a link, and let friends and family contribute to the gifts that matter most.</p>
+  <a href="/register.html" class="btn btn-primary" style="font-size:1rem;padding:0.75rem 2rem;">Create a registry</a>
+</div>
+
+<div class="container">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:3rem;">
+    <div class="card text-center">
+      <div style="font-size:2rem;margin-bottom:0.5rem;">📋</div>
+      <strong>Create a registry</strong>
+      <p class="text-muted mt-1" style="font-size:0.88rem;">Add gift goals with target amounts.</p>
+    </div>
+    <div class="card text-center">
+      <div style="font-size:2rem;margin-bottom:0.5rem;">🔗</div>
+      <strong>Share a link</strong>
+      <p class="text-muted mt-1" style="font-size:0.88rem;">Send your unique link to guests.</p>
+    </div>
+    <div class="card text-center">
+      <div style="font-size:2rem;margin-bottom:0.5rem;">💸</div>
+      <strong>Guests contribute</strong>
+      <p class="text-muted mt-1" style="font-size:0.88rem;">No account needed. Anonymous or named.</p>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  if (Auth.isLoggedIn()) {
+    // Logged-in users land on the dashboard, not the marketing page
+    window.location.href = '/dashboard.html';
+  }
+</script>
+</body>
+</html>

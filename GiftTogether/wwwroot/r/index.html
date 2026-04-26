@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gift Registry – GiftTogether</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    /* ── Page background ──────────────────────────────────────────────────── */
+    body { background: #f4f3ff; }
+
+    /* ── Hero ─────────────────────────────────────────────────────────────── */
+    .registry-hero {
+      background: linear-gradient(160deg, #6c63ff 0%, #a78bfa 100%);
+      color: #fff;
+      padding: 2.5rem 1rem 2rem;
+      text-align: center;
+    }
+    .hero-avatar-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .hero-avatar {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid rgba(255,255,255,0.7);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    }
+    .hero-avatar-placeholder {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      border: 3px solid rgba(255,255,255,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+    }
+    .hero-created-by {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.8;
+      margin-bottom: 0.2rem;
+    }
+    .hero-creator-name {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+    }
+    .hero-registry-title {
+      font-size: 1.9rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 0.75rem;
+    }
+    .hero-message {
+      font-size: 0.97rem;
+      opacity: 0.92;
+      max-width: 520px;
+      margin: 0 auto 1.5rem;
+      font-style: italic;
+      line-height: 1.55;
+    }
+
+    /* ── Progress summary card ────────────────────────────────────────────── */
+    .progress-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(108,99,255,0.13);
+      padding: 1.25rem 1.5rem;
+      margin: -1.25rem 1rem 0;
+      position: relative;
+      z-index: 2;
+    }
+    .progress-totals {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.5rem;
+    }
+    .progress-raised {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .progress-target {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+    .progress-wrap-lg {
+      background: #ede9fe;
+      border-radius: 99px;
+      height: 12px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+    .progress-bar-lg {
+      height: 100%;
+      background: linear-gradient(90deg, #6c63ff, #22c55e);
+      border-radius: 99px;
+      transition: width 0.5s ease;
+    }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* ── Share row ────────────────────────────────────────────────────────── */
+    .share-row {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+    .share-row .btn { flex: 1; min-width: 120px; justify-content: center; }
+    .btn-whatsapp {
+      background: #25d366;
+      color: #fff;
+      border: none;
+    }
+    .btn-whatsapp:hover { background: #1ebe5d; }
+
+    /* ── Section heading ──────────────────────────────────────────────────── */
+    .section-heading {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 1.75rem 0 0.75rem;
+      padding: 0 0.25rem;
+    }
+
+    /* ── Goal card ────────────────────────────────────────────────────────── */
+    .goal-card-guest {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(108,99,255,0.08);
+      overflow: hidden;
+      margin-bottom: 1.25rem;
+    }
+    .goal-img-wrap {
+      width: 100%;
+      height: 200px;
+      background: #ede9fe;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .goal-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .goal-img-placeholder {
+      font-size: 3.5rem;
+      opacity: 0.35;
+    }
+    .goal-body { padding: 1.25rem 1.25rem 0; }
+    .goal-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.3rem;
+    }
+    .goal-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .goal-target-badge {
+      background: #ede9fe;
+      color: var(--primary);
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 0.25rem 0.65rem;
+      border-radius: 99px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .goal-description {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 0.75rem;
+    }
+    .goal-progress-section { margin-bottom: 0.5rem; }
+    .goal-progress-numbers {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 0.3rem;
+    }
+    .goal-progress-numbers strong { color: var(--text); }
+
+    /* ── Goal actions ─────────────────────────────────────────────────────── */
+    .goal-actions {
+      padding: 0.75rem 1.25rem 1rem;
+    }
+    .btn-contribute {
+      width: 100%;
+      justify-content: center;
+      padding: 0.7rem 1.25rem;
+      font-size: 0.95rem;
+      border-radius: 10px;
+    }
+    .funded-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: #dcfce7;
+      color: #166534;
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+    }
+
+    /* ── Contributors ─────────────────────────────────────────────────────── */
+    .contrib-section {
+      border-top: 1px solid #f0eeff;
+      padding: 0.75rem 1.25rem 1rem;
+    }
+    .contrib-section-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+    .contrib-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 0.45rem 0;
+      border-top: 1px solid #f5f3ff;
+      font-size: 0.86rem;
+    }
+    .contrib-row:first-of-type { border-top: none; }
+    .contrib-row-name { font-weight: 600; color: var(--text); }
+    .contrib-row-msg { font-size: 0.8rem; color: var(--muted); margin-top: 0.1rem; font-style: italic; }
+    .contrib-row-amount { font-weight: 700; color: var(--primary); white-space: nowrap; margin-left: 0.75rem; }
+    .first-contrib-cta {
+      font-size: 0.88rem;
+      color: var(--muted);
+      padding: 0.35rem 0;
+    }
+
+    /* ── Test mode banner ─────────────────────────────────────────────────── */
+    .test-banner {
+      background: #f0f9ff;
+      border: 1.5px solid #7dd3fc;
+      border-radius: 10px;
+      padding: 0.7rem 1rem;
+      font-size: 0.82rem;
+      color: #0c4a6e;
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    /* ── Trust footer ─────────────────────────────────────────────────────── */
+    .trust-footer {
+      background: #fff;
+      border-top: 1px solid var(--border);
+      padding: 1.5rem 1rem;
+      margin-top: 2rem;
+      text-align: center;
+    }
+    .trust-footer p {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 0.3rem;
+      line-height: 1.5;
+    }
+    .trust-footer p:last-child { margin-bottom: 0; }
+    .trust-footer strong { color: var(--text); }
+
+    /* ── Contribution modal ───────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 200;
+      padding: 0;
+    }
+    @media (min-width: 520px) {
+      .modal-overlay { align-items: center; padding: 1rem; }
+    }
+    .modal-sheet {
+      background: #fff;
+      width: 100%;
+      max-width: 480px;
+      border-radius: 20px 20px 0 0;
+      padding: 1.5rem 1.5rem 2rem;
+      position: relative;
+      max-height: 92vh;
+      overflow-y: auto;
+    }
+    @media (min-width: 520px) {
+      .modal-sheet { border-radius: 16px; }
+    }
+    .modal-drag-handle {
+      width: 40px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 99px;
+      margin: 0 auto 1.25rem;
+    }
+    @media (min-width: 520px) { .modal-drag-handle { display: none; } }
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: #f5f3ff;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+    }
+    .modal-close:hover { background: #ede9fe; color: var(--text); }
+    .modal-goal-name {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+      padding-right: 2rem;
+    }
+    .modal-goal-meta {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <a class="nav-brand" href="/">🎁 GiftTogether</a>
+  <div class="nav-links">
+    <a href="/register.html" class="btn btn-outline btn-sm">Create your own</a>
+  </div>
+</nav>
+
+<!-- Loading / error states -->
+<div id="loading" style="padding:3rem 1rem;text-align:center;color:var(--muted);">Loading registry…</div>
+<div id="pageAlert" class="alert hidden" style="margin:1rem;"></div>
+
+<!-- Main content (hidden until loaded) -->
+<div id="pageContent" class="hidden">
+
+  <!-- ── Hero ──────────────────────────────────────────────────────────── -->
+  <div class="registry-hero" id="heroSection"></div>
+
+  <!-- ── Progress + share card ─────────────────────────────────────────── -->
+  <div class="container" style="padding-top:0;">
+    <div class="progress-card" id="progressCard"></div>
+
+    <!-- Test mode notice -->
+    <div class="test-banner mt-2">
+      <span style="flex-shrink:0;">🧪</span>
+      <span><strong>Test mode:</strong> No real payments are processed. Contributions are for demonstration only.</span>
+    </div>
+
+    <!-- Gift goals -->
+    <div class="section-heading">Gift goals</div>
+    <div id="goalsList"></div>
+  </div>
+
+  <!-- ── Trust footer ───────────────────────────────────────────────────── -->
+  <div class="trust-footer">
+    <p>⚠️ <strong>Only contribute if you personally know the creator.</strong></p>
+    <p>GiftTogether does not verify registry creators or hold any funds.</p>
+    <p>Payments go directly to the creator via the payment provider.</p>
+  </div>
+
+</div>
+
+<!-- ── Contribution modal ─────────────────────────────────────────────────── -->
+<div id="modalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modalGoalName">
+  <div class="modal-sheet">
+    <div class="modal-drag-handle"></div>
+    <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
+
+    <div class="modal-goal-name" id="modalGoalName"></div>
+    <div class="modal-goal-meta" id="modalGoalMeta"></div>
+
+    <div id="modalAlert" class="alert hidden"></div>
+
+    <form id="contribForm">
+      <div class="form-group">
+        <label for="contribName">Your name <span class="text-muted">(optional — leave blank to stay anonymous)</span></label>
+        <input type="text" id="contribName" placeholder="e.g. Aunt Lisa" autocomplete="name" />
+      </div>
+      <div class="form-group">
+        <label for="contribAmount">Amount (R) *</label>
+        <input type="number" id="contribAmount" placeholder="e.g. 200" min="1" step="0.01" required />
+      </div>
+      <div class="form-group">
+        <label for="contribMessage">Leave a message <span class="text-muted">(optional)</span></label>
+        <textarea id="contribMessage" placeholder="A little note for the recipient…" style="min-height:70px;"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;padding:0.75rem;font-size:1rem;" id="contribBtn">
+        Contribute (test)
+      </button>
+      <p class="text-center text-muted mt-1" style="font-size:0.75rem;">
+        🧪 No real payment is processed in test mode.
+      </p>
+    </form>
+
+    <div id="contribSuccess" class="hidden" style="text-align:center;padding:1.5rem 0 0.5rem;">
+      <div style="font-size:3rem;margin-bottom:0.75rem;">🎉</div>
+      <strong style="font-size:1.15rem;">Thank you!</strong>
+      <p class="text-muted mt-1" style="font-size:0.92rem;">Your contribution has been recorded.</p>
+      <button class="btn btn-primary mt-2" style="width:100%;padding:0.7rem;" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  // ── Slug extraction ─────────────────────────────────────────────────────────
+  const pathParts = location.pathname.split('/').filter(Boolean);
+  const slug = pathParts[1]; // /r/{slug}
+  if (!slug) window.location.href = '/';
+
+  let registry = null;
+  let activeGoalId = null;
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // ── Modal ───────────────────────────────────────────────────────────────────
+  function openModal(goalId) {
+    const goal = registry.giftGoals.find(g => g.id === goalId);
+    if (!goal) return;
+    activeGoalId = goalId;
+
+    const remaining = Math.max(0, goal.targetAmount - goal.totalRaised);
+    document.getElementById('modalGoalName').textContent = goal.name;
+    document.getElementById('modalGoalMeta').textContent =
+      `${formatCurrency(goal.totalRaised)} raised · ${formatCurrency(remaining)} still needed`;
+
+    document.getElementById('contribForm').classList.remove('hidden');
+    document.getElementById('contribSuccess').classList.add('hidden');
+    document.getElementById('contribName').value = '';
+    document.getElementById('contribAmount').value = '';
+    document.getElementById('contribMessage').value = '';
+    hideAlert(document.getElementById('modalAlert'));
+
+    document.getElementById('modalOverlay').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.add('hidden');
+    document.body.style.overflow = '';
+    activeGoalId = null;
+    loadRegistry(); // refresh progress after contribution
+  }
+
+  // Close modal when clicking the backdrop
+  document.getElementById('modalOverlay').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  });
+
+  document.getElementById('contribForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const alertEl = document.getElementById('modalAlert');
+    const btn = document.getElementById('contribBtn');
+    hideAlert(alertEl);
+
+    const name = document.getElementById('contribName').value.trim();
+    const amount = parseFloat(document.getElementById('contribAmount').value);
+    const message = document.getElementById('contribMessage').value.trim();
+
+    if (!amount || amount <= 0) {
+      showAlert(alertEl, 'Please enter a valid amount.');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Processing…';
+
+    try {
+      await API.contribute(activeGoalId, name, message, amount);
+      document.getElementById('contribForm').classList.add('hidden');
+      document.getElementById('contribSuccess').classList.remove('hidden');
+    } catch (err) {
+      showAlert(alertEl, err.message);
+      btn.disabled = false;
+      btn.textContent = 'Contribute (test)';
+    }
+  });
+
+  // ── Render ──────────────────────────────────────────────────────────────────
+  function renderRegistry() {
+    const c = registry.creator;
+    const totalRaised = registry.giftGoals.reduce((s, g) => s + g.totalRaised, 0);
+    const totalTarget = registry.giftGoals.reduce((s, g) => s + g.targetAmount, 0);
+    const pct = progressPct(totalRaised, totalTarget);
+    const shareUrl = `${location.origin}/r/${registry.slug}`;
+    const waUrl = `https://wa.me/?text=${encodeURIComponent(shareUrl)}`;
+
+    // ── Hero ──────────────────────────────────────────────────────────────
+    const avatarHtml = c.profileImageUrl
+      ? `<img class="hero-avatar" src="${escHtml(c.profileImageUrl)}" alt="${escHtml(c.name)}"
+           onerror="this.outerHTML='<div class=\\'hero-avatar-placeholder\\'>👤</div>'" />`
+      : `<div class="hero-avatar-placeholder">👤</div>`;
+
+    // Apply hero background: image > color > default gradient
+    const heroEl = document.getElementById('heroSection');
+    if (registry.heroImageUrl) {
+      heroEl.style.background = `linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)), url('${registry.heroImageUrl}') center/cover no-repeat`;
+    } else if (registry.heroBackgroundColor) {
+      heroEl.style.background = registry.heroBackgroundColor;
+    }
+
+    document.getElementById('heroSection').innerHTML = `
+      <div class="hero-avatar-wrap">${avatarHtml}</div>
+      <div class="hero-created-by">Created by</div>
+      <div class="hero-creator-name">${escHtml(c.name)}</div>
+      <div class="hero-registry-title">${escHtml(registry.name)}</div>
+      ${c.guestMessage
+        ? `<div class="hero-message">"${escHtml(c.guestMessage)}"</div>`
+        : ''}
+    `;
+
+    // ── Progress + share card ─────────────────────────────────────────────
+    document.getElementById('progressCard').innerHTML = `
+      <div class="progress-totals">
+        <span class="progress-raised">${formatCurrency(totalRaised)}</span>
+        <span class="progress-target">of ${formatCurrency(totalTarget)}</span>
+      </div>
+      <div class="progress-wrap-lg">
+        <div class="progress-bar-lg" style="width:${pct}%"></div>
+      </div>
+      <div class="progress-meta">
+        <span>${pct}% funded</span>
+        <span>${registry.giftGoals.length} gift goal${registry.giftGoals.length !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="share-row">
+        <button class="btn btn-outline" onclick="copyShareLink('${escHtml(shareUrl)}', this)">
+          🔗 Copy link
+        </button>
+        <a class="btn btn-whatsapp" href="${escHtml(waUrl)}" target="_blank" rel="noopener noreferrer">
+          💬 Share on WhatsApp
+        </a>
+      </div>
+    `;
+
+    // ── Gift goal cards ───────────────────────────────────────────────────
+    const goalsHtml = registry.giftGoals.length
+      ? registry.giftGoals.map(g => renderGoalCard(g)).join('')
+      : `<div class="goal-card-guest" style="padding:2rem;text-align:center;">
+           <p class="text-muted">No gift goals have been added yet.</p>
+         </div>`;
+
+    document.getElementById('goalsList').innerHTML = goalsHtml;
+    document.getElementById('pageContent').classList.remove('hidden');
+    document.title = `${registry.name} – GiftTogether`;
+  }
+
+  function renderGoalCard(g) {
+    const gPct = progressPct(g.totalRaised, g.targetAmount);
+    const isFunded = gPct >= 100;
+
+    // Image — show uploaded image or a placeholder icon
+    const imageSection = g.imageUrl
+      ? `<div class="goal-img-wrap">
+           <img src="${escHtml(g.imageUrl)}" alt="${escHtml(g.name)}"
+                onerror="this.parentElement.innerHTML='<div class=\\'goal-img-placeholder\\'>🎁</div>'" />
+         </div>`
+      : `<div class="goal-img-wrap">
+           <div class="goal-img-placeholder">🎁</div>
+         </div>`;
+
+    // Contribute / funded action
+    const actionBtn = isFunded
+      ? `<span class="funded-badge">✓ Fully funded!</span>`
+      : `<button class="btn btn-primary btn-contribute" onclick="openModal(${g.id})">
+           🎁 Contribute
+         </button>`;
+
+    // Product link — rendered inline under the title, not as an action button
+
+    // Contributors section
+    const recentContribs = g.contributions.slice(0, 4);
+    const contribSection = `
+      <div class="contrib-section">
+        <div class="contrib-section-title">
+          ${g.contributions.length > 0
+            ? `${g.contributions.length} contribution${g.contributions.length !== 1 ? 's' : ''}`
+            : 'Contributors'}
+        </div>
+        ${recentContribs.length > 0
+          ? recentContribs.map(c => `
+              <div class="contrib-row">
+                <div>
+                  <div class="contrib-row-name">${escHtml(c.contributorName)}</div>
+                  ${c.message ? `<div class="contrib-row-msg">"${escHtml(c.message)}"</div>` : ''}
+                </div>
+                <div class="contrib-row-amount">${formatCurrency(c.amount)}</div>
+              </div>
+            `).join('')
+            + (g.contributions.length > 4
+                ? `<p class="text-muted" style="font-size:0.78rem;padding-top:0.4rem;">
+                     +${g.contributions.length - 4} more
+                   </p>`
+                : '')
+          : `<p class="first-contrib-cta">Be the first to contribute ❤️</p>`
+        }
+      </div>
+    `;
+
+    return `
+      <div class="goal-card-guest">
+        ${imageSection}
+        <div class="goal-body">
+          <div class="goal-title-row">
+            <div class="goal-title">${escHtml(g.name)}</div>
+            <span class="goal-target-badge">${formatCurrency(g.targetAmount)}</span>
+          </div>
+          ${g.productLink
+            ? `<a href="${escHtml(g.productLink)}" target="_blank" rel="noopener noreferrer"
+                 style="display:inline-block;font-size:0.8rem;font-weight:600;color:var(--primary);margin:0.2rem 0 0.5rem;text-decoration:none;">
+                 View product ↗
+               </a>`
+            : ''}
+          ${g.description
+            ? `<p class="goal-description">${escHtml(g.description)}</p>`
+            : ''}
+          <div class="goal-progress-section">
+            <div class="progress-wrap">
+              <div class="progress-bar" style="width:${gPct}%"></div>
+            </div>
+            <div class="goal-progress-numbers">
+              <span><strong>${formatCurrency(g.totalRaised)}</strong> raised</span>
+              <span>${gPct}%</span>
+            </div>
+          </div>
+        </div>
+        <div class="goal-actions">
+          ${actionBtn}
+        </div>
+        ${contribSection}
+      </div>
+    `;
+  }
+
+  // ── Share helpers ───────────────────────────────────────────────────────────
+  function copyShareLink(url, btn) {
+    navigator.clipboard.writeText(url).then(() => {
+      const orig = btn.innerHTML;
+      btn.innerHTML = '✓ Copied!';
+      btn.disabled = true;
+      setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 2500);
+    }).catch(() => {
+      showAlert(document.getElementById('pageAlert'), 'Could not copy — please copy the URL manually.');
+    });
+  }
+
+  // ── Load ────────────────────────────────────────────────────────────────────
+  async function loadRegistry() {
+    try {
+      registry = await API.getRegistryBySlug(slug);
+      document.getElementById('loading').classList.add('hidden');
+      renderRegistry();
+    } catch {
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('pageContent').innerHTML = `
+        <div style="padding:4rem 1rem;text-align:center;">
+          <div style="font-size:3rem;margin-bottom:1rem;">🔍</div>
+          <strong style="font-size:1.1rem;">Registry not found</strong>
+          <p class="text-muted mt-1">This link may be invalid or the registry has been removed.</p>
+          <a href="/" class="btn btn-outline mt-2">Go home</a>
+        </div>
+      `;
+      document.getElementById('pageContent').classList.remove('hidden');
+    }
+  }
+
+  loadRegistry();
+</script>
+</body>
+</html>
