@@ -1,0 +1,43 @@
+@namespace GiftTogether.Mobile.Components.Shared
+@inject IJSRuntime JS
+
+@if (IsOpen)
+{
+    <div class="sheet-backdrop @(IsOpen ? "sheet-backdrop--visible" : "")"
+         @onclick="OnClose"
+         role="dialog"
+         aria-modal="true"
+         aria-label="@Title">
+        <div class="sheet @(IsOpen ? "sheet--open" : "")"
+             id="@_sheetId"
+             @onclick:stopPropagation="true">
+            <div class="sheet-handle" aria-hidden="true"></div>
+            @if (!string.IsNullOrEmpty(Title))
+            {
+                <h2 class="sheet-title">@Title</h2>
+            }
+            <div class="sheet-body">
+                @ChildContent
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private readonly string _sheetId = "sheet-" + Guid.NewGuid().ToString("N")[..8];
+    private bool _prevIsOpen;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (IsOpen && !_prevIsOpen)
+        {
+            await JS.InvokeVoidAsync("trapFocus", _sheetId);
+        }
+        _prevIsOpen = IsOpen;
+    }
+}

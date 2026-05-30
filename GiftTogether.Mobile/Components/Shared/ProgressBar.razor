@@ -1,0 +1,21 @@
+@namespace GiftTogether.Mobile.Components.Shared
+
+<div class="progress-track"
+     role="progressbar"
+     aria-valuenow="@((int)ClampedValue)"
+     aria-valuemin="0"
+     aria-valuemax="100"
+     aria-label="@((int)ClampedValue)% funded"
+     style="height: @Height;">
+    <div class="progress-fill @(Animated ? "progress-fill--animated" : "")"
+         style="width: @(ClampedValue.ToString("F1", System.Globalization.CultureInfo.InvariantCulture))%; height: 100%;">
+    </div>
+</div>
+
+@code {
+    [Parameter] public decimal Value { get; set; }
+    [Parameter] public string Height { get; set; } = "10px";
+    [Parameter] public bool Animated { get; set; } = true;
+
+    private decimal ClampedValue => Math.Min(100, Math.Max(0, Value));
+}

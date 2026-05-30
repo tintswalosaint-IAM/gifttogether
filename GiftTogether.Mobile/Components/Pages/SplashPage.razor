@@ -1,0 +1,180 @@
+@page "/splash"
+@inject NavigationManager Nav
+
+<div class="splash-screen">
+    <!-- Decorative background circles -->
+    <div class="splash-bg-circle splash-bg-circle--1" aria-hidden="true"></div>
+    <div class="splash-bg-circle splash-bg-circle--2" aria-hidden="true"></div>
+
+    <!-- Logo area -->
+    <div class="splash-logo-area">
+        <!-- NEO gift box logo -->
+        <div class="splash-logo" aria-label="NEO">
+            <svg width="120" height="120" viewBox="0 0 120 120" fill="none" aria-hidden="true">
+                <!-- Box body -->
+                <rect x="18" y="58" width="84" height="52" rx="6" fill="url(#neoBoxGrad)"/>
+                <!-- Box lid -->
+                <rect x="10" y="42" width="100" height="22" rx="6" fill="url(#neoLidGrad)"/>
+                <!-- Ribbon vertical -->
+                <rect x="52" y="42" width="16" height="68" rx="4" fill="white" opacity="0.9"/>
+                <!-- Ribbon horizontal on lid -->
+                <rect x="10" y="50" width="100" height="14" rx="4" fill="white" opacity="0.9"/>
+                <!-- Bow left loop -->
+                <ellipse cx="42" cy="36" rx="18" ry="10" fill="url(#neoRibbonGrad)" transform="rotate(-20 42 36)"/>
+                <!-- Bow right loop -->
+                <ellipse cx="78" cy="36" rx="18" ry="10" fill="url(#neoRibbonGrad)" transform="rotate(20 78 36)"/>
+                <!-- Bow center knot -->
+                <circle cx="60" cy="42" r="8" fill="url(#neoRibbonGrad)"/>
+                <!-- NEO text on box -->
+                <text x="60" y="92" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="white" letter-spacing="2">NEO</text>
+                <defs>
+                    <linearGradient id="neoBoxGrad" x1="18" y1="58" x2="102" y2="110" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#0C8AFF"/>
+                        <stop offset="100%" stop-color="#0055CC"/>
+                    </linearGradient>
+                    <linearGradient id="neoLidGrad" x1="10" y1="42" x2="110" y2="64" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#38A8FF"/>
+                        <stop offset="100%" stop-color="#0C8AFF"/>
+                    </linearGradient>
+                    <linearGradient id="neoRibbonGrad" x1="0" y1="0" x2="1" y2="1" gradientUnits="objectBoundingBox">
+                        <stop offset="0%" stop-color="#60C0FF"/>
+                        <stop offset="100%" stop-color="#0C8AFF"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+    </div>
+
+    <!-- Copy -->
+    <div class="splash-copy">
+        <h1 class="splash-headline">No Guessing.<br/>Just Gifting.</h1>
+        <p class="splash-subtext">Create a collection, share your link, and let your people contribute towards a gift you'll actually love.</p>
+    </div>
+
+    <!-- CTA -->
+    <div class="splash-cta">
+        <button class="btn splash-btn-primary" @onclick='() => Nav.NavigateTo("/login")'>
+            Create Collection
+        </button>
+        <button class="btn splash-btn-secondary" @onclick='() => Nav.NavigateTo("/login")'>
+            I already have an account
+        </button>
+    </div>
+</div>
+
+<style>
+    .splash-screen {
+        min-height: 100vh;
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        padding: env(safe-area-inset-top) var(--space-6) calc(var(--space-8) + env(safe-area-inset-bottom));
+        position: relative;
+        overflow: hidden;
+    }
+
+    .splash-bg-circle {
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    .splash-bg-circle--1 {
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(12,138,255,0.08) 0%, transparent 70%);
+        top: -80px;
+        right: -80px;
+    }
+    .splash-bg-circle--2 {
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(12,138,255,0.06) 0%, transparent 70%);
+        bottom: 100px;
+        left: -60px;
+    }
+
+    .splash-logo-area {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-top: var(--space-12);
+    }
+
+    .splash-logo {
+        filter: drop-shadow(0 8px 24px rgba(12,138,255,0.25));
+    }
+
+    .splash-copy {
+        text-align: center;
+        padding: var(--space-6) 0 var(--space-8);
+    }
+
+    .splash-headline {
+        font-size: var(--text-3xl);
+        font-weight: var(--weight-extrabold);
+        color: var(--color-text-primary);
+        line-height: var(--leading-tight);
+        margin-bottom: var(--space-4);
+        letter-spacing: -0.02em;
+    }
+
+    .splash-subtext {
+        font-size: var(--text-base);
+        font-weight: var(--weight-medium);
+        color: #777777;
+        line-height: var(--leading-relaxed);
+        max-width: 320px;
+        margin: 0 auto;
+        letter-spacing: -0.01em;
+    }
+
+    .splash-cta {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+        align-items: center;
+    }
+
+    .splash-btn-primary {
+        width: 100%;
+        max-width: 320px;
+        height: 56px;
+        background: #0C8AFF;
+        color: white;
+        font-size: var(--text-lg);
+        font-weight: var(--weight-extrabold);
+        border-radius: var(--radius-lg);
+        border: none;
+        cursor: pointer;
+        letter-spacing: -0.01em;
+        box-shadow: 0 4px 16px rgba(12,138,255,0.35);
+        transition: all var(--transition-fast);
+    }
+    .splash-btn-primary:active {
+        transform: scale(0.97);
+        box-shadow: 0 2px 8px rgba(12,138,255,0.25);
+    }
+
+    .splash-btn-secondary {
+        background: none;
+        border: none;
+        color: #0C8AFF;
+        font-size: var(--text-sm);
+        font-weight: var(--weight-semibold);
+        cursor: pointer;
+        padding: var(--space-2) var(--space-4);
+        min-height: 44px;
+    }
+</style>
+
+@code {
+    protected override void OnInitialized()
+    {
+        // If already seen splash, skip to login
+        // Could add a preference check here later
+    }
+}

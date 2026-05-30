@@ -1,0 +1,541 @@
+@page "/registry/{Id:int}"
+@inject ApiService Api
+@inject AuthState Auth
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<TopBar ShowBack="true" OnBack="GoBack" Title="@(_registry?.Name)">
+    <RightContent>
+        <button class="btn btn--ghost btn--sm" @onclick="ShowAddGoal" aria-label="Add goal">
+            + Goal
+        </button>
+    </RightContent>
+</TopBar>
+
+@if (_loading)
+{
+    <SkeletonLoader Variant="hero" Count="1" />
+    <SkeletonLoader Variant="goal-card" Count="2" />
+}
+else if (_error != null)
+{
+    <div class="error-state">
+        <p>@_error</p>
+        <button class="btn btn--primary" @onclick="LoadAsync">Try again</button>
+    </div>
+}
+else if (_registry != null)
+{
+    var shareUrl = $"{ApiService.BaseUrl}/r/{_registry.Slug}";
+
+    <!-- Hero section -->
+    <div class="hero-section">
+        @if (!string.IsNullOrEmpty(_registry.HeroImageUrl))
+        {
+            <img class="hero-image" id="hero-img" src="@_registry.HeroImageUrl" alt=""
+                 style="transform: translateY(var(--hero-parallax-offset, 0));" />
+        }
+        <div class="hero-scrim"></div>
+        <div class="hero-content">
+            @if (!string.IsNullOrEmpty(_registry.Creator.ProfileImageUrl))
+            {
+                <img class="hero-avatar" src="@_registry.Creator.ProfileImageUrl"
+                     alt="@_registry.Creator.Name" />
+            }
+            else
+            {
+                <div class="hero-avatar hero-avatar--placeholder" aria-hidden="true"></div>
+            }
+            <div class="hero-created-by">Created by</div>
+            <div class="hero-owner-name">@_registry.Creator.Name</div>
+            <h2 class="hero-title">@_registry.Name</h2>
+            @if (!string.IsNullOrEmpty(_registry.Creator.GuestMessage))
+            {
+                <p class="hero-message">@_registry.Creator.GuestMessage</p>
+            }
+        </div>
+    </div>
+
+    <!-- Progress card -->
+    <div class="progress-card">
+        <div class="progress-card-amounts">
+            <span class="progress-card-raised">R @TotalRaised.ToString("N0")</span>
+            <span class="progress-card-target">of R @TotalTarget.ToString("N0") target</span>
+        </div>
+        <ProgressBar Value="@OverallPct" />
+        <div class="progress-card-meta">
+            <span>@((int)OverallPct)% funded</span>
+            <span>@_registry.GiftGoals.Count goal@(_registry.GiftGoals.Count != 1 ? "s" : "")</span>
+        </div>
+        <div class="share-row">
+            <button class="btn btn--outline btn--sm" @onclick="() => CopyLink(shareUrl)">
+                🔗 Copy link
+            </button>
+            <button class="btn btn--whatsapp btn--sm" @onclick="() => ShareWhatsApp(shareUrl)">
+                💬 WhatsApp
+            </button>
+        </div>
+    </div>
+
+    <!-- Goal list -->
+    <div class="goal-list">
+        @if (_registry.GiftGoals.Count == 0)
+        {
+            <EmptyState Icon="🎁" Title="No gift goals yet"
+                        Body="Add your first gift goal to get started." />
+        }
+        else
+        {
+            @foreach (var g in _registry.GiftGoals)
+            {
+                <GoalCard Goal="@g" IsOwner="true" OnRemove="ShowDeleteGoal" />
+            }
+        }
+    </div>
+}
+
+<!-- Add goal bottom sheet -->
+<BottomSheet IsOpen="_showAddGoal" OnClose="CloseModals" Title="Add a gift goal">
+    <ChildContent>
+        <!-- Image picker -->
+        <div class="goal-image-picker" style="margin-bottom: var(--space-4);">
+            @if (_imagePreviewSrc != null)
+            {
+                <div style="position: relative; display: inline-block;">
+                    <img src="@_imagePreviewSrc" alt="Goal image preview"
+                         style="width: 120px; height: 120px; object-fit: cover; border-radius: var(--radius-md); display: block;" />
+                    <button class="btn btn--ghost btn--sm"
+                            style="position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; min-width: 28px; min-height: 28px; padding: 0; border-radius: var(--radius-full); background: var(--color-danger); color: white;"
+                            @onclick="ClearImage" aria-label="Remove image">✕</button>
+                </div>
+            }
+            else
+            {
+                <button class="btn btn--outline"
+                        style="width: 120px; height: 120px; flex-direction: column; gap: var(--space-2); border-style: dashed;"
+                        @onclick="PickImageAsync" aria-label="Add goal image">
+                    <span style="font-size: 2rem;">📷</span>
+                    <span style="font-size: var(--text-xs);">Add photo</span>
+                </button>
+            }
+        </div>
+
+        <div class="form-group">
+            <label for="goal-name">Gift name <span aria-hidden="true">*</span></label>
+            <input id="goal-name" type="text" @bind="_goalName" @bind:event="oninput"
+                   placeholder="e.g. Laptop"
+                   class="@(_goalNameError != null ? "input--error" : "")"
+                   aria-required="true"
+                   aria-describedby="@(_goalNameError != null ? "goal-name-error" : null)" />
+            @if (_goalNameError != null)
+            {
+                <span id="goal-name-error" class="field-error" role="alert">
+                    ⚠ @_goalNameError
+                </span>
+            }
+        </div>
+        <div class="form-group">
+            <label for="goal-desc">Description <span class="text-optional">(optional)</span></label>
+            <textarea id="goal-desc" @bind="_goalDesc" @bind:event="oninput"
+                      placeholder="What will this support?"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="goal-amount">Target amount (R) <span aria-hidden="true">*</span></label>
+            <input id="goal-amount" type="number" @bind="_goalAmount" @bind:event="oninput"
+                   placeholder="e.g. 15000" min="1"
+                   class="@(_goalAmountError != null ? "input--error" : "")"
+                   aria-required="true"
+                   aria-describedby="@(_goalAmountError != null ? "goal-amount-error" : null)" />
+            @if (_goalAmountError != null)
+            {
+                <span id="goal-amount-error" class="field-error" role="alert">
+                    ⚠ @_goalAmountError
+                </span>
+            }
+        </div>
+        <div class="form-group">
+            <label for="goal-link">Product link <span class="text-optional">(optional)</span></label>
+            <div style="position: relative;">
+                <input id="goal-link" type="url"
+                       placeholder="https://takealot.com/..."
+                       value="@_goalLink"
+                       @oninput="OnProductLinkInput" />
+                @if (_scrapeLoading)
+                {
+                    <span class="spinner" style="position: absolute; right: var(--space-3); top: 50%; transform: translateY(-50%); border-color: rgba(108,99,255,0.3); border-top-color: var(--color-primary);" aria-label="Fetching product details…"></span>
+                }
+            </div>
+            @if (_scrapeError != null)
+            {
+                <span class="field-error" style="color: var(--color-text-secondary);">⚠ @_scrapeError</span>
+            }
+        </div>
+        <button class="btn btn--primary btn--full" @onclick="AddGoalAsync"
+                disabled="@_actionLoading" aria-busy="@_actionLoading">
+            @if (_actionLoading)
+            {
+                <span class="btn-spinner" aria-hidden="true"></span>
+                <span>Adding…</span>
+            }
+            else
+            {
+                <span>Add goal</span>
+            }
+        </button>
+    </ChildContent>
+</BottomSheet>
+
+<!-- Delete goal bottom sheet -->
+<BottomSheet IsOpen="_showDeleteGoal" OnClose="CloseModals"
+             Title="@($"Remove goal?")">
+    <ChildContent>
+        <p class="sheet-confirm-message">
+            Remove '@_goalToDelete?.Name'? This cannot be undone.
+        </p>
+        <div class="sheet-actions">
+            <button class="btn btn--danger btn--full" @onclick="DeleteGoalAsync"
+                    disabled="@_actionLoading" aria-busy="@_actionLoading">
+                @if (_actionLoading)
+                {
+                    <span class="btn-spinner" aria-hidden="true"></span>
+                    <span>Removing…</span>
+                }
+                else
+                {
+                    <span>Remove goal</span>
+                }
+            </button>
+            <button class="btn btn--outline btn--full" @onclick="CloseModals"
+                    disabled="@_actionLoading">
+                Cancel
+            </button>
+        </div>
+    </ChildContent>
+</BottomSheet>
+
+<Toast @ref="_toast" />
+
+<style>
+    .spinner {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        border: 2px solid;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+    }
+
+    @@keyframes spin {
+        to { transform: translateY(-50%) rotate(360deg); }
+    }
+</style>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    RegistryResponse? _registry;
+    string? _error;
+    bool _loading = true;
+    bool _showAddGoal;
+    bool _showDeleteGoal;
+    bool _actionLoading;
+    GiftGoalResponse? _goalToDelete;
+    string _goalName = "", _goalDesc = "", _goalLink = "";
+    decimal _goalAmount;
+    string? _goalNameError, _goalAmountError;
+    Toast? _toast;
+
+    // Image picker state
+    Stream? _pickedImageStream;
+    string? _pickedImageFileName;
+    string? _pickedImageContentType;
+    string? _imagePreviewSrc;
+
+    // Scrape state
+    CancellationTokenSource? _scrapeCts;
+    bool _scrapeLoading;
+    string? _scrapeError;
+
+    private bool _parallaxAttached;
+
+    decimal TotalRaised => _registry?.GiftGoals.Sum(g => g.TotalRaised) ?? 0;
+    decimal TotalTarget => _registry?.GiftGoals.Sum(g => g.TargetAmount) ?? 0;
+    decimal OverallPct  => TotalTarget > 0 ? Math.Min(100, Math.Round(TotalRaised / TotalTarget * 100, 1)) : 0;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_registry != null && !string.IsNullOrEmpty(_registry.HeroImageUrl) && !_parallaxAttached)
+        {
+            _parallaxAttached = true;
+            await JS.InvokeVoidAsync("attachParallax", "hero-img", null);
+        }
+    }
+
+    async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+        try
+        {
+            var all = await Api.GetMyRegistriesAsync();
+            _registry = all.FirstOrDefault(r => r.Id == Id);
+            if (_registry == null)
+                _error = "Registry not found.";
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    void GoBack() => Nav.NavigateTo("/");
+
+    void ShowAddGoal()
+    {
+        _goalName = "";
+        _goalDesc = "";
+        _goalAmount = 0;
+        _goalLink = "";
+        _goalNameError = null;
+        _goalAmountError = null;
+        _scrapeError = null;
+        ClearImage();
+        _showAddGoal = true;
+    }
+
+    void ShowDeleteGoal(GiftGoalResponse g)
+    {
+        _goalToDelete = g;
+        _showDeleteGoal = true;
+    }
+
+    void CloseModals()
+    {
+        _showAddGoal = false;
+        _showDeleteGoal = false;
+        _goalToDelete = null;
+        _goalNameError = null;
+        _goalAmountError = null;
+        ClearImage();
+        _scrapeError = null;
+    }
+
+    async Task PickImageAsync()
+    {
+        try
+        {
+            var photo = await MediaPicker.Default.PickPhotoAsync(
+                new MediaPickerOptions { Title = "Select goal image" });
+
+            if (photo == null) return;
+
+            var ct = photo.ContentType ?? "image/jpeg";
+            var allowed = new[] { "image/jpeg", "image/png", "image/webp", "image/gif" };
+            if (!allowed.Contains(ct.ToLower()))
+            {
+                _scrapeError = "Only JPEG, PNG, WebP, or GIF images are allowed.";
+                return;
+            }
+
+            await using var sizeCheck = await photo.OpenReadAsync();
+            if (sizeCheck.Length > 5 * 1024 * 1024)
+            {
+                _scrapeError = "Image must be smaller than 5 MB.";
+                return;
+            }
+
+            _pickedImageStream = await photo.OpenReadAsync();
+            _pickedImageFileName = photo.FileName;
+            _pickedImageContentType = ct;
+
+            using var ms = new MemoryStream();
+            await _pickedImageStream.CopyToAsync(ms);
+            _pickedImageStream.Position = 0;
+            var b64 = Convert.ToBase64String(ms.ToArray());
+            _imagePreviewSrc = $"data:{ct};base64,{b64}";
+        }
+        catch (Exception ex)
+        {
+            _scrapeError = $"Could not open image: {ex.Message}";
+        }
+    }
+
+    void ClearImage()
+    {
+        _pickedImageStream?.Dispose();
+        _pickedImageStream = null;
+        _pickedImageFileName = null;
+        _pickedImageContentType = null;
+        _imagePreviewSrc = null;
+    }
+
+    async Task OnProductLinkInput(ChangeEventArgs e)
+    {
+        _goalLink = e.Value?.ToString() ?? "";
+        _scrapeError = null;
+
+        _scrapeCts?.Cancel();
+        _scrapeCts?.Dispose();
+        _scrapeCts = new CancellationTokenSource();
+        var cts = _scrapeCts;
+
+        if (string.IsNullOrWhiteSpace(_goalLink) ||
+            !Uri.TryCreate(_goalLink, UriKind.Absolute, out _))
+            return;
+
+        try
+        {
+            await Task.Delay(800, cts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+
+        _scrapeLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var result = await Api.ScrapeProductAsync(_goalLink);
+            ApplyAutoFill(result);
+        }
+        catch (Exception ex)
+        {
+            _scrapeError = ex.Message;
+        }
+        finally
+        {
+            _scrapeLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    void ApplyAutoFill(ScrapeResult result)
+    {
+        if (string.IsNullOrWhiteSpace(_goalName) && result.Title != null)
+            _goalName = result.Title;
+
+        if (_goalAmount == 0 && result.Price is > 0)
+            _goalAmount = result.Price.Value;
+
+        if (_pickedImageStream == null && result.ImageUrl != null)
+            _imagePreviewSrc = result.ImageUrl;
+    }
+
+    async Task AddGoalAsync()
+    {
+        _goalNameError = null;
+        _goalAmountError = null;
+
+        var valid = true;
+        if (string.IsNullOrWhiteSpace(_goalName))
+        {
+            _goalNameError = "Gift name is required.";
+            valid = false;
+        }
+        if (_goalAmount <= 0)
+        {
+            _goalAmountError = "Please enter a valid target amount.";
+            valid = false;
+        }
+        if (!valid) return;
+
+        _actionLoading = true;
+        try
+        {
+            var newGoal = await Api.AddGoalAsync(
+                Id,
+                _goalName.Trim(),
+                _goalDesc.Trim(),
+                _goalAmount,
+                string.IsNullOrWhiteSpace(_goalLink) ? null : _goalLink.Trim());
+
+            // Optimistically append the new goal without a full reload
+            if (_registry != null)
+            {
+                _registry = _registry with
+                {
+                    GiftGoals = new List<GiftGoalResponse>(_registry.GiftGoals) { newGoal }
+                };
+            }
+
+            // Upload image if one was picked
+            if (_pickedImageStream != null)
+            {
+                try
+                {
+                    _pickedImageStream.Position = 0;
+                    await Api.UploadGoalImageAsync(
+                        Id, newGoal.Id,
+                        _pickedImageStream,
+                        _pickedImageFileName!,
+                        _pickedImageContentType!);
+                }
+                catch (Exception uploadEx)
+                {
+                    _goalNameError = $"Goal saved, but image upload failed: {uploadEx.Message}";
+                }
+                finally
+                {
+                    ClearImage();
+                }
+            }
+
+            CloseModals();
+            if (_toast != null)
+                await _toast.Show("✓ Goal added!");
+        }
+        catch (Exception ex)
+        {
+            _goalNameError = ex.Message;
+        }
+        finally
+        {
+            _actionLoading = false;
+        }
+    }
+
+    async Task DeleteGoalAsync()
+    {
+        if (_goalToDelete == null) return;
+        _actionLoading = true;
+        try
+        {
+            await Api.DeleteGoalAsync(Id, _goalToDelete.Id);
+
+            // Optimistically remove the goal without a full reload
+            if (_registry != null)
+            {
+                var updated = _registry.GiftGoals
+                    .Where(g => g.Id != _goalToDelete.Id)
+                    .ToList();
+                _registry = _registry with { GiftGoals = updated };
+            }
+
+            CloseModals();
+            if (_toast != null)
+                await _toast.Show("✓ Goal removed!");
+        }
+        catch (Exception ex)
+        {
+            _goalNameError = ex.Message;
+        }
+        finally
+        {
+            _actionLoading = false;
+        }
+    }
+
+    async Task CopyLink(string url) =>
+        await JS.InvokeVoidAsync("copyToClipboard", url);
+
+    async Task ShareWhatsApp(string url) =>
+        await JS.InvokeVoidAsync("shareWhatsApp", url);
+}

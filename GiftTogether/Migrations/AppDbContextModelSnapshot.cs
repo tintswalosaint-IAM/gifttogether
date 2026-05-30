@@ -40,6 +40,9 @@ namespace GiftTogether.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("PaystackReference")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.HasIndex("GiftGoalId");
@@ -145,6 +148,9 @@ namespace GiftTogether.Migrations
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PaystackSubaccountCode")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ProfileImageUrl")

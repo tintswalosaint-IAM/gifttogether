@@ -1,0 +1,51 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager Nav
+@implements IDisposable
+
+<div class="page @(_transitioning ? (_direction == "forward" ? "page--enter-forward" : "page--enter-back") : "")">
+    @Body
+</div>
+
+@code {
+    bool _transitioning;
+    string _direction = "forward";
+    readonly List<string> _history = new();
+
+    protected override void OnInitialized()
+    {
+        _history.Add(Nav.Uri);
+        Nav.LocationChanged += OnLocationChanged;
+    }
+
+    void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        var newUrl = e.Location;
+        var backIdx = _history.LastIndexOf(newUrl);
+
+        if (backIdx >= 0 && backIdx < _history.Count - 1)
+        {
+            _direction = "back";
+            _history.RemoveRange(backIdx + 1, _history.Count - backIdx - 1);
+        }
+        else
+        {
+            _direction = "forward";
+            if (_history.LastOrDefault() != newUrl)
+                _history.Add(newUrl);
+        }
+
+        _transitioning = true;
+        StateHasChanged();
+
+        _ = Task.Delay(300).ContinueWith(_ =>
+        {
+            _transitioning = false;
+            InvokeAsync(StateHasChanged);
+        });
+    }
+
+    public void Dispose()
+    {
+        Nav.LocationChanged -= OnLocationChanged;
+    }
+}

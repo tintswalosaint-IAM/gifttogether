@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>NEO</title>
+    <base href="/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+    <div class="status-bar-safe-area"></div>
+    <div id="app">
+        <div class="spinner-wrap" style="min-height:100vh;">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <script src="_framework/blazor.webview.js" autostart="false"></script>
+    <script>
+        // Start Blazor
+        Blazor.start();
+
+        // Format currency
+        window.formatCurrency = (amount) =>
+            'R\u00a0' + Number(amount).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        // Copy to clipboard
+        window.copyToClipboard = (text) => navigator.clipboard.writeText(text);
+
+        // Share via WhatsApp
+        window.shareWhatsApp = (url) => window.open(`https://wa.me/?text=${encodeURIComponent(url)}`, '_blank');
+
+        // Parallax scroll effect for hero section
+        window.attachParallax = (elementId, scrollContainerId) => {
+            const el = document.getElementById(elementId);
+            if (!el) return null;
+            const container = scrollContainerId ? document.getElementById(scrollContainerId) : window;
+            if (!container) return null;
+            const handler = () => {
+                const scrollTop = container === window ? window.scrollY : container.scrollTop;
+                el.style.setProperty('--hero-parallax-offset', scrollTop * 0.4 + 'px');
+            };
+            container.addEventListener('scroll', handler, { passive: true });
+            return { dispose: () => container.removeEventListener('scroll', handler) };
+        };
+
+        // Focus trap for bottom sheets
+        window.trapFocus = (elementId) => {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const focusable = el.querySelectorAll(
+                'button, input, textarea, select, a[href], [tabindex]:not([tabindex="-1"])'
+            );
+            if (focusable.length) focusable[0].focus();
+        };
+    </script>
+</body>
+</html>

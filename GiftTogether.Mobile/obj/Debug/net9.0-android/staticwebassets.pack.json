@@ -1,0 +1,45 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\A249228\\OneDrive - Standard Bank\\Desktop\\GiftTogether\\GiftTogether.Mobile\\obj\\Debug\\net9.0-android\\scopedcss\\bundle\\GiftTogether.Mobile.styles.css",
+      "PackagePath": "staticwebassets\\GiftTogether.Mobile.styles.css"
+    },
+    {
+      "Id": "C:\\Users\\A249228\\OneDrive - Standard Bank\\Desktop\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\css\\app.css",
+      "PackagePath": "staticwebassets\\css\\app.css"
+    },
+    {
+      "Id": "C:\\Users\\A249228\\OneDrive - Standard Bank\\Desktop\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\css\\bootstrap\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\css\\bootstrap\\bootstrap.min.css"
+    },
+    {
+      "Id": "C:\\Users\\A249228\\OneDrive - Standard Bank\\Desktop\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\css\\bootstrap\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\css\\bootstrap\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\A249228\\OneDrive - Standard Bank\\Desktop\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\index.html",
+      "PackagePath": "staticwebassets\\index.html"
+    },
+    {
+      "Id": "obj\\Debug\\net9.0-android\\staticwebassets\\msbuild.GiftTogether.Mobile.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
+    },
+    {
+      "Id": "obj\\Debug\\net9.0-android\\staticwebassets\\msbuild.GiftTogether.Mobile.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net9.0-android\\staticwebassets\\msbuild.build.GiftTogether.Mobile.props",
+      "PackagePath": "build\\GiftTogether.Mobile.props"
+    },
+    {
+      "Id": "obj\\Debug\\net9.0-android\\staticwebassets\\msbuild.buildMultiTargeting.GiftTogether.Mobile.props",
+      "PackagePath": "buildMultiTargeting\\GiftTogether.Mobile.props"
+    },
+    {
+      "Id": "obj\\Debug\\net9.0-android\\staticwebassets\\msbuild.buildTransitive.GiftTogether.Mobile.props",
+      "PackagePath": "buildTransitive\\GiftTogether.Mobile.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

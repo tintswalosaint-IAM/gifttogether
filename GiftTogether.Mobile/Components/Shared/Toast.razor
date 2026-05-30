@@ -1,0 +1,40 @@
+@namespace GiftTogether.Mobile.Components.Shared
+
+@if (_visible)
+{
+    <div class="toast @(_entering ? "toast--enter" : "toast--exit") toast--@_type"
+         role="status"
+         aria-live="polite">
+        <span class="toast-icon" aria-hidden="true">@GetIcon()</span>
+        <span class="toast-message">@_message</span>
+    </div>
+}
+
+@code {
+    private bool _visible;
+    private bool _entering;
+    private string _message = "";
+    private string _type = "success";
+
+    public async Task Show(string message, string type = "success")
+    {
+        _message = message;
+        _type = type;
+        _visible = true;
+        _entering = true;
+        StateHasChanged();
+        await Task.Delay(2800);
+        _entering = false;
+        StateHasChanged();
+        await Task.Delay(200);
+        _visible = false;
+        StateHasChanged();
+    }
+
+    private string GetIcon() => _type switch
+    {
+        "success" => "✓",
+        "error"   => "✕",
+        _         => "ℹ"
+    };
+}

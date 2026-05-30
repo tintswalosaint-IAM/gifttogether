@@ -354,6 +354,14 @@
       margin-bottom: 1.25rem;
     }
   </style>
+
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#6c63ff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Neo">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+
 </head>
 <body>
 
@@ -378,12 +386,6 @@
   <!-- ── Progress + share card ─────────────────────────────────────────── -->
   <div class="container" style="padding-top:0;">
     <div class="progress-card" id="progressCard"></div>
-
-    <!-- Test mode notice -->
-    <div class="test-banner mt-2">
-      <span style="flex-shrink:0;">🧪</span>
-      <span><strong>Test mode:</strong> No real payments are processed. Contributions are for demonstration only.</span>
-    </div>
 
     <!-- Gift goals -->
     <div class="section-heading">Gift goals</div>
@@ -410,31 +412,63 @@
 
     <div id="modalAlert" class="alert hidden"></div>
 
+    <!-- Step 1: Contribution form -->
     <form id="contribForm">
       <div class="form-group">
         <label for="contribName">Your name <span class="text-muted">(optional — leave blank to stay anonymous)</span></label>
         <input type="text" id="contribName" placeholder="e.g. Aunt Lisa" autocomplete="name" />
       </div>
       <div class="form-group">
+        <label for="contribEmail">Email <span class="text-muted">(optional — for payment receipt)</span></label>
+        <input type="email" id="contribEmail" placeholder="you@example.com" autocomplete="email" />
+      </div>
+      <div class="form-group">
         <label for="contribAmount">Amount (R) *</label>
-        <input type="number" id="contribAmount" placeholder="e.g. 200" min="1" step="0.01" required />
+        <input type="number" id="contribAmount" placeholder="e.g. 200" min="1" step="1" required
+               oninput="updateFeeBreakdown()" />
+      </div>
+      <div id="feeBreakdown" class="hidden" style="background:#f5f3ff;border-radius:10px;padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.88rem;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;">
+          <span style="color:#6b7280;">Contribution</span>
+          <span id="feeContrib">R 0.00</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;">
+          <span style="color:#6b7280;">Neo service fee</span>
+          <span id="feeNeoFee">R 2.00</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;">
+          <span style="color:#6b7280;">Payment processing fee</span>
+          <span id="feePaystackFee">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-weight:700;border-top:1px solid #e5e7eb;padding-top:0.5rem;">
+          <span>Total charged</span>
+          <span id="feeTotal" style="color:#7C3AED;">—</span>
+        </div>
       </div>
       <div class="form-group">
         <label for="contribMessage">Leave a message <span class="text-muted">(optional)</span></label>
         <textarea id="contribMessage" placeholder="A little note for the recipient…" style="min-height:70px;"></textarea>
       </div>
       <button type="submit" class="btn btn-primary" style="width:100%;padding:0.75rem;font-size:1rem;" id="contribBtn">
-        Contribute (test)
+        Contribute securely
       </button>
       <p class="text-center text-muted mt-1" style="font-size:0.75rem;">
-        🧪 No real payment is processed in test mode.
+        🔒 Secured by Paystack. We never store your card details.
       </p>
     </form>
 
+    <!-- Step 2: Processing -->
+    <div id="contribProcessing" class="hidden" style="text-align:center;padding:1.5rem 0 0.5rem;">
+      <div style="font-size:3rem;margin-bottom:0.75rem;">⏳</div>
+      <strong style="font-size:1.1rem;">Verifying your payment…</strong>
+      <p class="text-muted mt-1" style="font-size:0.88rem;">Please wait while we confirm your contribution.</p>
+    </div>
+
+    <!-- Step 3: Success -->
     <div id="contribSuccess" class="hidden" style="text-align:center;padding:1.5rem 0 0.5rem;">
       <div style="font-size:3rem;margin-bottom:0.75rem;">🎉</div>
-      <strong style="font-size:1.15rem;">Thank you!</strong>
-      <p class="text-muted mt-1" style="font-size:0.92rem;">Your contribution has been recorded.</p>
+      <strong style="font-size:1.15rem;">You're part of this! 💛</strong>
+      <p class="text-muted mt-1" style="font-size:0.92rem;">Your contribution has been confirmed.</p>
       <button class="btn btn-primary mt-2" style="width:100%;padding:0.7rem;" onclick="closeModal()">Close</button>
     </div>
   </div>
@@ -475,6 +509,10 @@
     document.getElementById('contribAmount').value = '';
     document.getElementById('contribMessage').value = '';
     hideAlert(document.getElementById('modalAlert'));
+    // Reset fee breakdown and disable pay button until amount is entered
+    document.getElementById('feeBreakdown').classList.add('hidden');
+    document.getElementById('contribBtn').textContent = 'Contribute securely';
+    document.getElementById('contribBtn').disabled = true;
 
     document.getElementById('modalOverlay').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -492,6 +530,67 @@
     if (e.target === document.getElementById('modalOverlay')) closeModal();
   });
 
+  // ── Fee quote — debounced, backend is single source of truth ────────────────
+  let _quoteTimer = null;
+  let _lastQuotedAmount = null;
+
+  function updateFeeBreakdown() {
+    const amt = parseFloat(document.getElementById('contribAmount').value);
+    const breakdownEl = document.getElementById('feeBreakdown');
+    const btn = document.getElementById('contribBtn');
+
+    if (!amt || amt <= 0) {
+      breakdownEl.classList.add('hidden');
+      btn.textContent = 'Contribute securely';
+      btn.disabled = true;
+      _lastQuotedAmount = null;
+      return;
+    }
+
+    // Show breakdown immediately with contribution amount; fees loading
+    breakdownEl.classList.remove('hidden');
+    document.getElementById('feeContrib').textContent = `R ${amt.toFixed(2)}`;
+    document.getElementById('feeNeoFee').textContent = `R 2.00`;
+    document.getElementById('feePaystackFee').textContent = `loading…`;
+    document.getElementById('feeTotal').textContent = `loading…`;
+    btn.textContent = 'Contribute securely';
+    btn.disabled = true;
+
+    // Debounce: wait 400ms after user stops typing before calling backend
+    clearTimeout(_quoteTimer);
+    _quoteTimer = setTimeout(() => fetchQuote(amt), 400);
+  }
+
+  async function fetchQuote(amt) {
+    try {
+      const res = await fetch('/api/payments/quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: amt })
+      });
+      if (!res.ok) throw new Error('Quote failed');
+      const q = await res.json();
+
+      // Only update if the amount hasn't changed while we were waiting
+      const current = parseFloat(document.getElementById('contribAmount').value);
+      if (current !== amt) return;
+
+      document.getElementById('feeContrib').textContent = `R ${q.contributionAmount.toFixed(2)}`;
+      document.getElementById('feeNeoFee').textContent = `R ${q.neoServiceFee.toFixed(2)}`;
+      document.getElementById('feePaystackFee').textContent = `R ${q.paystackProcessingFee.toFixed(2)}`;
+      document.getElementById('feeTotal').textContent = `R ${q.totalCharged.toFixed(2)}`;
+      document.getElementById('contribBtn').textContent = `Pay R ${q.totalCharged.toFixed(2)} securely`;
+      document.getElementById('contribBtn').disabled = false;
+      _lastQuotedAmount = amt;
+    } catch {
+      document.getElementById('feePaystackFee').textContent = `—`;
+      document.getElementById('feeTotal').textContent = `—`;
+      document.getElementById('contribBtn').textContent = 'Contribute securely';
+      document.getElementById('contribBtn').disabled = false;
+    }
+  }
+
+  // ── Contribution form submit → Paystack initialize ──────────────────────────
   document.getElementById('contribForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const alertEl = document.getElementById('modalAlert');
@@ -499,6 +598,7 @@
     hideAlert(alertEl);
 
     const name = document.getElementById('contribName').value.trim();
+    const email = document.getElementById('contribEmail').value.trim();
     const amount = parseFloat(document.getElementById('contribAmount').value);
     const message = document.getElementById('contribMessage').value.trim();
 
@@ -508,18 +608,94 @@
     }
 
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Processing…';
+    btn.innerHTML = '<span class="spinner"></span> Redirecting to payment…';
 
     try {
-      await API.contribute(activeGoalId, name, message, amount);
-      document.getElementById('contribForm').classList.add('hidden');
-      document.getElementById('contribSuccess').classList.remove('hidden');
+      const res = await fetch('/api/payments/initialize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          goalId: activeGoalId,
+          contributionAmount: amount,
+          contributorName: name || null,
+          message: message || null,
+          email: email || null
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || `Request failed (${res.status})`);
+      }
+
+      const data = await res.json();
+
+      // Store reference and slug for callback page
+      sessionStorage.setItem('neo_payment_ref', data.reference);
+      sessionStorage.setItem('neo_payment_slug', registry.slug);
+
+      // Redirect to Paystack checkout
+      window.location.href = data.authorizationUrl;
+
     } catch (err) {
       showAlert(alertEl, err.message);
       btn.disabled = false;
-      btn.textContent = 'Contribute (test)';
+      updateFeeBreakdown(); // re-enable button with current quote
     }
   });
+
+  // ── Handle callback return (reference in URL) ───────────────────────────────
+  async function handlePaymentCallback() {
+    const params = new URLSearchParams(location.search);
+    const reference = params.get('reference') || params.get('trxref');
+    if (!reference) return;
+
+    // Show processing state
+    openModalForCallback(reference);
+  }
+
+  function openModalForCallback(reference) {
+    document.getElementById('contribForm').classList.add('hidden');
+    document.getElementById('contribProcessing').classList.remove('hidden');
+    document.getElementById('contribSuccess').classList.add('hidden');
+    document.getElementById('modalGoalName').textContent = 'Processing payment…';
+    document.getElementById('modalGoalMeta').textContent = '';
+    document.getElementById('modalOverlay').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    verifyPayment(reference);
+  }
+
+  async function verifyPayment(reference) {
+    try {
+      const res = await fetch(`/api/payments/verify/${encodeURIComponent(reference)}`, {
+        method: 'POST'
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || `Verification failed (${res.status})`);
+      }
+
+      // Success — show success state and reload registry
+      document.getElementById('contribProcessing').classList.add('hidden');
+      document.getElementById('contribSuccess').classList.remove('hidden');
+      document.getElementById('modalGoalName').textContent = 'Payment confirmed!';
+
+      // Clean up URL
+      history.replaceState({}, '', location.pathname);
+
+      // Reload registry data to show updated progress
+      await loadRegistry();
+
+    } catch (err) {
+      document.getElementById('contribProcessing').classList.add('hidden');
+      const alertEl = document.getElementById('modalAlert');
+      showAlert(alertEl, err.message);
+      document.getElementById('contribForm').classList.remove('hidden');
+      document.getElementById('modalGoalName').textContent = 'Payment verification failed';
+    }
+  }
 
   // ── Render ──────────────────────────────────────────────────────────────────
   function renderRegistry() {
@@ -708,7 +884,10 @@
     }
   }
 
-  loadRegistry();
+  loadRegistry().then(() => {
+    // After registry loads, check if we're returning from Paystack
+    handlePaymentCallback();
+  });
 </script>
 </body>
 </html>

@@ -1,0 +1,280 @@
+@page "/payment/callback"
+@inject ApiService Api
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<div class="payment-processing-screen">
+    @if (_state == ProcessingState.Verifying)
+    {
+        <!-- Processing: animated checklist -->
+        <div class="processing-icon" aria-hidden="true">
+            <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                <circle cx="40" cy="40" r="36" fill="#EDE9FE" />
+                <path d="M24 40l10 10 22-22" stroke="#7C3AED" stroke-width="4"
+                      stroke-linecap="round" stroke-linejoin="round"
+                      stroke-dasharray="60" stroke-dashoffset="@(_lockOffset)"
+                      style="transition: stroke-dashoffset 0.5s ease;" />
+            </svg>
+        </div>
+        <h2 class="processing-title">Processing your contribution…</h2>
+        <p class="processing-subtitle">This will only take a few seconds.</p>
+
+        <div class="processing-steps">
+            <div class="processing-step @(_step >= 1 ? "processing-step--done" : "")">
+                @if (_step >= 1) { <span class="step-check">✓</span> } else { <span class="step-spinner"></span> }
+                <span>Secure payment</span>
+            </div>
+            <div class="processing-step @(_step >= 2 ? "processing-step--done" : _step >= 1 ? "processing-step--active" : "")">
+                @if (_step >= 2) { <span class="step-check">✓</span> } else { <span class="step-spinner @(_step >= 1 ? "" : "step-spinner--hidden")"></span> }
+                <span>Verifying details</span>
+            </div>
+            <div class="processing-step @(_step >= 3 ? "processing-step--done" : _step >= 2 ? "processing-step--active" : "")">
+                @if (_step >= 3) { <span class="step-check">✓</span> } else { <span class="step-spinner @(_step >= 2 ? "" : "step-spinner--hidden")"></span> }
+                <span>Almost there!</span>
+            </div>
+        </div>
+    }
+    else if (_state == ProcessingState.Success)
+    {
+        <!-- Success -->
+        <div class="success-icon" aria-hidden="true">
+            <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                <circle cx="40" cy="40" r="36" fill="url(#successGrad)" />
+                <path d="M24 40l10 10 22-22" stroke="white" stroke-width="4"
+                      stroke-linecap="round" stroke-linejoin="round" />
+                <defs>
+                    <linearGradient id="successGrad" x1="4" y1="4" x2="76" y2="76">
+                        <stop offset="0%" stop-color="#9F67FF" />
+                        <stop offset="100%" stop-color="#7C3AED" />
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+        <h2 class="success-title">You're part of this! 💛</h2>
+        <p class="success-subtitle">Thank you for making this extra special.</p>
+
+        @if (_verifyResult != null)
+        {
+            <div class="success-progress-card">
+                <div style="font-size: var(--text-sm); color: var(--color-text-secondary); margin-bottom: var(--space-2);">
+                    Your contribution of <strong>R @_verifyResult.Amount.ToString("N2")</strong> has been received.
+                </div>
+                <ProgressBar Value="@_updatedPct" />
+                <div style="font-size: var(--text-xs); color: var(--color-text-secondary); margin-top: var(--space-2);">
+                    R @_verifyResult.TotalRaised.ToString("N0") raised
+                </div>
+            </div>
+        }
+
+        <div class="success-actions">
+            <button class="btn btn--outline btn--full" @onclick="ShareCollection">
+                🔗 Share this collection
+            </button>
+            <button class="btn btn--primary btn--full" @onclick="BackToCollection">
+                Back to collection
+            </button>
+        </div>
+    }
+    else if (_state == ProcessingState.Failed)
+    {
+        <!-- Failed -->
+        <div class="error-state">
+            <div class="error-state-icon">⚠</div>
+            <p class="error-state-message">@_error</p>
+            <button class="btn btn--outline" @onclick="RetryVerify">Try again</button>
+            <button class="btn btn--ghost" @onclick="BackToCollection" style="margin-top: var(--space-2);">
+                Back to collection
+            </button>
+        </div>
+    }
+</div>
+
+<style>
+    .payment-processing-screen {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: var(--space-8) var(--space-6);
+        background: var(--color-background);
+        text-align: center;
+    }
+
+    .processing-icon, .success-icon {
+        margin-bottom: var(--space-6);
+    }
+
+    .processing-title, .success-title {
+        font-size: var(--text-2xl);
+        font-weight: var(--weight-extrabold);
+        color: var(--color-text-primary);
+        margin-bottom: var(--space-2);
+        letter-spacing: -0.02em;
+    }
+
+    .processing-subtitle, .success-subtitle {
+        font-size: var(--text-base);
+        color: var(--color-text-secondary);
+        margin-bottom: var(--space-8);
+    }
+
+    .processing-steps {
+        width: 100%;
+        max-width: 280px;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+        text-align: left;
+    }
+
+    .processing-step {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        font-size: var(--text-base);
+        font-weight: var(--weight-medium);
+        color: var(--color-text-disabled);
+        transition: color var(--transition-base);
+    }
+
+    .processing-step--active {
+        color: var(--color-text-primary);
+    }
+
+    .processing-step--done {
+        color: var(--color-text-primary);
+    }
+
+    .step-check {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--color-success);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: var(--text-xs);
+        font-weight: var(--weight-bold);
+        flex-shrink: 0;
+    }
+
+    .step-spinner {
+        width: 24px;
+        height: 24px;
+        border: 2px solid var(--color-primary-light);
+        border-top-color: var(--color-primary);
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        flex-shrink: 0;
+    }
+
+    .step-spinner--hidden {
+        border-color: var(--color-border);
+        border-top-color: var(--color-border);
+        animation: none;
+    }
+
+    .success-progress-card {
+        background: var(--color-surface);
+        border-radius: var(--radius-lg);
+        padding: var(--space-4);
+        box-shadow: var(--shadow-sm);
+        width: 100%;
+        max-width: 320px;
+        margin-bottom: var(--space-6);
+        text-align: left;
+    }
+
+    .success-actions {
+        width: 100%;
+        max-width: 320px;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+    }
+</style>
+
+@code {
+    [SupplyParameterFromQuery] public string? Reference { get; set; }
+    [SupplyParameterFromQuery] public string? Trxref { get; set; }
+    [SupplyParameterFromQuery] public string? Slug { get; set; }
+
+    enum ProcessingState { Verifying, Success, Failed }
+
+    ProcessingState _state = ProcessingState.Verifying;
+    PaymentVerifyResponse? _verifyResult;
+    string? _error;
+    int _step = 1;
+    int _lockOffset = 60;
+    decimal _updatedPct;
+
+    // The reference from Paystack callback — could be in ?reference= or ?trxref=
+    string? EffectiveReference => Reference ?? Trxref;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(EffectiveReference))
+        {
+            _error = "Payment reference missing.";
+            _state = ProcessingState.Failed;
+            return;
+        }
+
+        await RunVerificationAsync();
+    }
+
+    async Task RunVerificationAsync()
+    {
+        _state = ProcessingState.Verifying;
+        _step = 1;
+
+        // Animate the checklist steps
+        await Task.Delay(600);
+        _step = 2;
+        StateHasChanged();
+
+        await Task.Delay(600);
+        _step = 3;
+        StateHasChanged();
+
+        // Minimum display time of 1.5s before showing result
+        var verifyTask = Api.VerifyPaymentAsync(EffectiveReference!);
+        await Task.Delay(400); // ensure minimum 1.5s total
+
+        try
+        {
+            _verifyResult = await verifyTask;
+            _updatedPct = 0; // will be calculated if we have goal data
+            _state = ProcessingState.Success;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+            _state = ProcessingState.Failed;
+        }
+
+        StateHasChanged();
+    }
+
+    async Task RetryVerify() => await RunVerificationAsync();
+
+    void BackToCollection()
+    {
+        // Navigate back to the registry — use Slug if available, otherwise dashboard
+        if (!string.IsNullOrEmpty(Slug))
+            Nav.NavigateTo($"/r/{Slug}");
+        else
+            Nav.NavigateTo("/");
+    }
+
+    async Task ShareCollection()
+    {
+        if (!string.IsNullOrEmpty(Slug))
+        {
+            var url = $"{ApiService.BaseUrl}/r/{Slug}";
+            await JS.InvokeVoidAsync("shareWhatsApp", url);
+        }
+    }
+}

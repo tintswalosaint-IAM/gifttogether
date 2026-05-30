@@ -1,0 +1,440 @@
+@page "/create"
+@inject ApiService Api
+@inject AuthState Auth
+@inject NavigationManager Nav
+
+<TopBar ShowBack="true" OnBack="GoBack"
+        Title="@(_step == 1 ? "Registry details" : "Add gift goals")" />
+
+<!-- Step indicator -->
+<div class="step-indicator">
+    <div class="step-segment @(_step >= 1 ? "step-segment--active" : "")"></div>
+    <div class="step-segment @(_step >= 2 ? "step-segment--active" : "")"></div>
+</div>
+
+<div class="page-content">
+    @if (_step == 1)
+    {
+        <div class="@(_transitioning ? "step--exit-left" : "step--enter-right")">
+            <!-- Step 1: Registry details -->
+            <div class="form-group @(_nameError != null ? "form-group--error" : "")">
+                <label class="form-label" for="reg-name">Registry name <span aria-hidden="true">*</span></label>
+                <input id="reg-name" class="form-input" type="text"
+                       placeholder="e.g. Baby Shower, Wedding"
+                       @bind="_regName" @oninput="() => _nameError = null" />
+                @if (_nameError != null)
+                {
+                    <span class="form-error-msg">⚠ @_nameError</span>
+                }
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="reg-desc">Description <span style="color: var(--color-text-disabled); font-weight: var(--weight-regular);">(optional)</span></label>
+                <textarea id="reg-desc" class="form-textarea"
+                          placeholder="Tell guests what this registry is for..."
+                          @bind="_regDesc"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="reg-message">Message to guests <span style="color: var(--color-text-disabled); font-weight: var(--weight-regular);">(optional)</span></label>
+                <textarea id="reg-message" class="form-textarea"
+                          placeholder="e.g. Thank you for being part of our special day!"
+                          @bind="_regMessage"></textarea>
+            </div>
+            <button class="btn btn--primary btn--full @(_loading ? "btn--loading" : "")"
+                    @onclick="ContinueAsync" disabled="@_loading">
+                @if (_loading) { <span class="btn-spinner"></span> } else { <span>Continue →</span> }
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="step--enter-right">
+            <!-- Step 2: Add gift goals -->
+
+            <!-- Image picker -->
+            <div class="goal-image-picker" style="margin-bottom: var(--space-4);">
+                @if (_imagePreviewSrc != null)
+                {
+                    <div style="position: relative; display: inline-block;">
+                        <img src="@_imagePreviewSrc" alt="Goal image preview"
+                             style="width: 120px; height: 120px; object-fit: cover; border-radius: var(--radius-md); display: block;" />
+                        <button class="btn btn--ghost btn--sm"
+                                style="position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; min-width: 28px; min-height: 28px; padding: 0; border-radius: var(--radius-full); background: var(--color-danger); color: white;"
+                                @onclick="ClearImage" aria-label="Remove image">✕</button>
+                    </div>
+                }
+                else
+                {
+                    <button class="btn btn--outline"
+                            style="width: 120px; height: 120px; flex-direction: column; gap: var(--space-2); border-style: dashed;"
+                            @onclick="PickImageAsync" aria-label="Add goal image">
+                        <span style="font-size: 2rem;">📷</span>
+                        <span style="font-size: var(--text-xs);">Add photo</span>
+                    </button>
+                }
+            </div>
+
+            <div class="form-group @(_goalNameError != null ? "form-group--error" : "")">
+                <label class="form-label" for="goal-name">Gift name <span aria-hidden="true">*</span></label>
+                <input id="goal-name" class="form-input" type="text"
+                       placeholder="e.g. Laptop, Pram"
+                       @bind="_goalName" @oninput="() => _goalNameError = null" />
+                @if (_goalNameError != null)
+                {
+                    <span class="form-error-msg">⚠ @_goalNameError</span>
+                }
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="goal-desc">Description <span style="color: var(--color-text-disabled); font-weight: var(--weight-regular);">(optional)</span></label>
+                <textarea id="goal-desc" class="form-textarea"
+                          placeholder="What will this support?"
+                          @bind="_goalDesc"></textarea>
+            </div>
+            <div class="form-group @(_goalAmountError != null ? "form-group--error" : "")">
+                <label class="form-label" for="goal-amount">Target amount (R) <span aria-hidden="true">*</span></label>
+                <input id="goal-amount" class="form-input" type="number"
+                       placeholder="e.g. 15000" min="1"
+                       @bind="_goalAmount" @oninput="() => _goalAmountError = null" />
+                @if (_goalAmountError != null)
+                {
+                    <span class="form-error-msg">⚠ @_goalAmountError</span>
+                }
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="goal-link">Product link <span style="color: var(--color-text-disabled); font-weight: var(--weight-regular);">(optional)</span></label>
+                <div style="position: relative;">
+                    <input id="goal-link" class="form-input" type="url"
+                           placeholder="https://takealot.com/..."
+                           value="@_goalLink"
+                           @oninput="OnProductLinkInput" />
+                    @if (_scrapeLoading)
+                    {
+                        <span class="spinner" style="position: absolute; right: var(--space-3); top: 50%; transform: translateY(-50%); border-color: rgba(108,99,255,0.3); border-top-color: var(--color-primary);" aria-label="Fetching product details…"></span>
+                    }
+                </div>
+                @if (_scrapeError != null)
+                {
+                    <span class="form-error-msg" style="color: var(--color-text-secondary);">⚠ @_scrapeError</span>
+                }
+            </div>
+            <div style="display: flex; gap: var(--space-3); margin-bottom: var(--space-4);">
+                <button class="btn btn--primary @(_goalLoading ? "btn--loading" : "")"
+                        style="flex: 1;"
+                        @onclick="AddGoalAsync" disabled="@_goalLoading">
+                    @if (_goalLoading) { <span class="btn-spinner"></span> } else { <span>Add goal</span> }
+                </button>
+                <button class="btn btn--outline @(_doneLoading ? "btn--loading" : "")"
+                        style="flex: 1;"
+                        @onclick="DoneAsync" disabled="@_doneLoading">
+                    @if (_doneLoading) { <span class="btn-spinner"></span> } else { <span>Done</span> }
+                </button>
+            </div>
+
+            <!-- Added goals list -->
+            @if (_addedGoals.Count > 0)
+            {
+                <div style="margin-top: var(--space-2);">
+                    <div style="font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-text-secondary); margin-bottom: var(--space-2);">
+                        Added goals (@_addedGoals.Count)
+                    </div>
+                    @foreach (var g in _addedGoals)
+                    {
+                        <div class="goal-item--new" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-3) var(--space-4); background: var(--color-surface); border-radius: var(--radius-md); margin-bottom: var(--space-2); box-shadow: var(--shadow-sm);">
+                            <span style="font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--color-text-primary);">@g.Name</span>
+                            <span class="badge badge--primary">R @g.TargetAmount.ToString("N0")</span>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .step-indicator {
+        display: flex;
+        gap: var(--space-2);
+        padding: var(--space-4) var(--space-5) var(--space-2);
+    }
+
+    .step-segment {
+        flex: 1;
+        height: 4px;
+        border-radius: var(--radius-full);
+        background: var(--color-border);
+        transition: background var(--transition-base);
+    }
+
+    .step-segment--active {
+        background: var(--color-primary);
+    }
+
+    .step--enter-right {
+        animation: slideInRight 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+
+    .step--exit-left {
+        animation: slideOutLeft 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+
+    @@keyframes slideOutLeft {
+        from { transform: translateX(0); opacity: 1; }
+        to   { transform: translateX(-100%); opacity: 0; }
+    }
+
+    .goal-item--new {
+        animation: slideInRight 200ms cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+
+    .spinner {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        border: 2px solid;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+    }
+
+    @@keyframes spin {
+        to { transform: translateY(-50%) rotate(360deg); }
+    }
+</style>
+
+@code {
+    int _step = 1;
+    bool _transitioning;
+
+    // Step 1 state
+    string _regName = "", _regDesc = "", _regMessage = "";
+    string? _nameError;
+    bool _loading;
+    RegistryResponse? _registry;
+
+    // Step 2 state
+    string _goalName = "", _goalDesc = "", _goalLink = "";
+    decimal _goalAmount;
+    string? _goalNameError, _goalAmountError;
+    bool _goalLoading, _doneLoading;
+    List<GiftGoalResponse> _addedGoals = new();
+
+    // Image picker state
+    Stream? _pickedImageStream;
+    string? _pickedImageFileName;
+    string? _pickedImageContentType;
+    string? _imagePreviewSrc;
+
+    // Scrape state
+    CancellationTokenSource? _scrapeCts;
+    bool _scrapeLoading;
+    string? _scrapeError;
+
+    void GoBack()
+    {
+        if (_step == 2)
+            _step = 1;
+        else
+            Nav.NavigateTo("/");
+    }
+
+    async Task ContinueAsync()
+    {
+        _nameError = null;
+        if (string.IsNullOrWhiteSpace(_regName))
+        {
+            _nameError = "Registry name is required";
+            return;
+        }
+
+        _loading = true;
+        try
+        {
+            _registry = await Api.CreateRegistryAsync(_regName.Trim(), _regDesc.Trim());
+
+            // Save guest message to user profile if provided
+            if (!string.IsNullOrWhiteSpace(_regMessage))
+                await Api.UpdateGuestMessageAsync(_regMessage.Trim());
+
+            _transitioning = true;
+            StateHasChanged();
+            await Task.Delay(150);
+            _step = 2;
+            _transitioning = false;
+        }
+        catch (Exception ex)
+        {
+            _nameError = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    async Task PickImageAsync()
+    {
+        try
+        {
+            var photo = await MediaPicker.Default.PickPhotoAsync(
+                new MediaPickerOptions { Title = "Select goal image" });
+
+            if (photo == null) return;
+
+            var ct = photo.ContentType ?? "image/jpeg";
+            var allowed = new[] { "image/jpeg", "image/png", "image/webp", "image/gif" };
+            if (!allowed.Contains(ct.ToLower()))
+            {
+                _scrapeError = "Only JPEG, PNG, WebP, or GIF images are allowed.";
+                return;
+            }
+
+            await using var sizeCheck = await photo.OpenReadAsync();
+            if (sizeCheck.Length > 5 * 1024 * 1024)
+            {
+                _scrapeError = "Image must be smaller than 5 MB.";
+                return;
+            }
+
+            _pickedImageStream = await photo.OpenReadAsync();
+            _pickedImageFileName = photo.FileName;
+            _pickedImageContentType = ct;
+
+            using var ms = new MemoryStream();
+            await _pickedImageStream.CopyToAsync(ms);
+            _pickedImageStream.Position = 0;
+            var b64 = Convert.ToBase64String(ms.ToArray());
+            _imagePreviewSrc = $"data:{ct};base64,{b64}";
+        }
+        catch (Exception ex)
+        {
+            _scrapeError = $"Could not open image: {ex.Message}";
+        }
+    }
+
+    void ClearImage()
+    {
+        _pickedImageStream?.Dispose();
+        _pickedImageStream = null;
+        _pickedImageFileName = null;
+        _pickedImageContentType = null;
+        _imagePreviewSrc = null;
+    }
+
+    async Task OnProductLinkInput(ChangeEventArgs e)
+    {
+        _goalLink = e.Value?.ToString() ?? "";
+        _scrapeError = null;
+
+        _scrapeCts?.Cancel();
+        _scrapeCts?.Dispose();
+        _scrapeCts = new CancellationTokenSource();
+        var cts = _scrapeCts;
+
+        if (string.IsNullOrWhiteSpace(_goalLink) ||
+            !Uri.TryCreate(_goalLink, UriKind.Absolute, out _))
+            return;
+
+        try
+        {
+            await Task.Delay(800, cts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+
+        _scrapeLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var result = await Api.ScrapeProductAsync(_goalLink);
+            ApplyAutoFill(result);
+        }
+        catch (Exception ex)
+        {
+            _scrapeError = ex.Message;
+        }
+        finally
+        {
+            _scrapeLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    void ApplyAutoFill(ScrapeResult result)
+    {
+        if (string.IsNullOrWhiteSpace(_goalName) && result.Title != null)
+            _goalName = result.Title;
+
+        if (_goalAmount == 0 && result.Price is > 0)
+            _goalAmount = result.Price.Value;
+
+        if (_pickedImageStream == null && result.ImageUrl != null)
+            _imagePreviewSrc = result.ImageUrl;
+    }
+
+    async Task AddGoalAsync()
+    {
+        _goalNameError = null;
+        _goalAmountError = null;
+
+        var valid = true;
+        if (string.IsNullOrWhiteSpace(_goalName)) { _goalNameError = "Gift name is required"; valid = false; }
+        if (_goalAmount <= 0) { _goalAmountError = "Enter a valid target amount"; valid = false; }
+        if (!valid) return;
+
+        _goalLoading = true;
+        try
+        {
+            var goal = await Api.AddGoalAsync(
+                _registry!.Id,
+                _goalName.Trim(),
+                _goalDesc.Trim(),
+                _goalAmount,
+                string.IsNullOrWhiteSpace(_goalLink) ? null : _goalLink.Trim());
+
+            // Upload image if one was picked
+            if (_pickedImageStream != null)
+            {
+                try
+                {
+                    _pickedImageStream.Position = 0;
+                    await Api.UploadGoalImageAsync(
+                        _registry!.Id, goal.Id,
+                        _pickedImageStream,
+                        _pickedImageFileName!,
+                        _pickedImageContentType!);
+                }
+                catch (Exception uploadEx)
+                {
+                    _goalNameError = $"Goal saved, but image upload failed: {uploadEx.Message}";
+                }
+                finally
+                {
+                    ClearImage();
+                }
+            }
+
+            _addedGoals.Add(goal);
+            _goalName = "";
+            _goalDesc = "";
+            _goalAmount = 0;
+            _goalLink = "";
+            _scrapeError = null;
+        }
+        catch (Exception ex)
+        {
+            _goalNameError = ex.Message;
+        }
+        finally
+        {
+            _goalLoading = false;
+        }
+    }
+
+    async Task DoneAsync()
+    {
+        if (_registry == null) return;
+        _doneLoading = true;
+        Nav.NavigateTo($"/registry/{_registry.Id}");
+    }
+}

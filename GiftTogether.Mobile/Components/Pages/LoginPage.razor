@@ -1,0 +1,186 @@
+@page "/login"
+@inject ApiService Api
+@inject AuthState Auth
+@inject NavigationManager Nav
+
+<div class="auth-screen">
+    <div class="auth-glow" aria-hidden="true"></div>
+
+    <!-- Brand section -->
+    <div class="auth-brand">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="margin-bottom: var(--space-4);">
+            <path d="M20 12v10H4V12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M22 7H2v5h20V7z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 22V7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h1 style="font-size: var(--text-3xl); font-weight: var(--weight-extrabold); color: white; margin-bottom: var(--space-2);">NEO</h1>
+        <p style="font-size: var(--text-sm); color: rgba(255,255,255,0.8);">No Guessing. Just Gifting.</p>
+    </div>
+
+    <!-- Auth card -->
+    <div class="auth-card auth-card--mounted">
+        <!-- Mode tabs -->
+        <div style="display: flex; gap: var(--space-2); margin-bottom: var(--space-5);">
+            <button class="btn @(_mode == "login" ? "btn--primary" : "btn--ghost")"
+                    style="flex: 1;"
+                    @onclick='() => SwitchMode("login")'>
+                Log in
+            </button>
+            <button class="btn @(_mode == "register" ? "btn--primary" : "btn--ghost")"
+                    style="flex: 1;"
+                    @onclick='() => SwitchMode("register")'>
+                Create account
+            </button>
+        </div>
+
+        <!-- Error banner -->
+        @if (_error != null)
+        {
+            <div class="error-banner">
+                <span class="error-banner-text">⚠ @_error</span>
+                <button class="error-banner-dismiss" @onclick="() => _error = null" aria-label="Dismiss error">✕</button>
+            </div>
+        }
+
+        <!-- Form -->
+        <div class="form-mode--enter">
+            @if (_mode == "login")
+            {
+                <!-- Login form -->
+                <div class="form-group @(_emailError != null ? "form-group--error" : "")">
+                    <label class="form-label" for="login-email">Email</label>
+                    <input id="login-email" class="form-input" type="email" placeholder="you@example.com"
+                           @bind="_email" @oninput="() => _emailError = null" autocomplete="email" />
+                    @if (_emailError != null)
+                    {
+                        <span class="form-error-msg">⚠ @_emailError</span>
+                    }
+                </div>
+                <div class="form-group @(_passwordError != null ? "form-group--error" : "")">
+                    <label class="form-label" for="login-password">Password</label>
+                    <input id="login-password" class="form-input" type="password" placeholder="••••••••"
+                           @bind="_password" @oninput="() => _passwordError = null" autocomplete="current-password" />
+                    @if (_passwordError != null)
+                    {
+                        <span class="form-error-msg">⚠ @_passwordError</span>
+                    }
+                </div>
+                <button class="btn btn--primary btn--full @(_loading ? "btn--loading" : "")"
+                        @onclick="LoginAsync" disabled="@_loading">
+                    @if (_loading) { <span class="btn-spinner"></span> } else { <span>Log in</span> }
+                </button>
+            }
+            else
+            {
+                <!-- Register form -->
+                <div class="form-group @(_nameError != null ? "form-group--error" : "")">
+                    <label class="form-label" for="reg-name">Full name</label>
+                    <input id="reg-name" class="form-input" type="text" placeholder="Jane Smith"
+                           @bind="_name" @oninput="() => _nameError = null" autocomplete="name" />
+                    @if (_nameError != null)
+                    {
+                        <span class="form-error-msg">⚠ @_nameError</span>
+                    }
+                </div>
+                <div class="form-group @(_emailError != null ? "form-group--error" : "")">
+                    <label class="form-label" for="reg-email">Email</label>
+                    <input id="reg-email" class="form-input" type="email" placeholder="you@example.com"
+                           @bind="_email" @oninput="() => _emailError = null" autocomplete="email" />
+                    @if (_emailError != null)
+                    {
+                        <span class="form-error-msg">⚠ @_emailError</span>
+                    }
+                </div>
+                <div class="form-group @(_passwordError != null ? "form-group--error" : "")">
+                    <label class="form-label" for="reg-password">Password</label>
+                    <input id="reg-password" class="form-input" type="password" placeholder="••••••••"
+                           @bind="_password" @oninput="() => _passwordError = null" autocomplete="new-password" />
+                    @if (_passwordError != null)
+                    {
+                        <span class="form-error-msg">⚠ @_passwordError</span>
+                    }
+                </div>
+                <button class="btn btn--primary btn--full @(_loading ? "btn--loading" : "")"
+                        @onclick="RegisterAsync" disabled="@_loading">
+                    @if (_loading) { <span class="btn-spinner"></span> } else { <span>Create account</span> }
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    string _mode = "login";
+    string _email = "", _password = "", _name = "";
+    string? _error, _emailError, _passwordError, _nameError;
+    bool _loading;
+
+    protected override void OnInitialized()
+    {
+        if (Auth.IsLoggedIn)
+            Nav.NavigateTo("/dashboard");
+    }
+
+    void SwitchMode(string mode)
+    {
+        _mode = mode;
+        _error = null;
+        _emailError = null;
+        _passwordError = null;
+        _nameError = null;
+    }
+
+    async Task LoginAsync()
+    {
+        _error = null;
+        _emailError = null;
+        _passwordError = null;
+
+        if (string.IsNullOrWhiteSpace(_email))    { _emailError = "Email is required"; return; }
+        if (string.IsNullOrWhiteSpace(_password)) { _passwordError = "Password is required"; return; }
+
+        _loading = true;
+        try
+        {
+            var result = await Api.LoginAsync(_email.Trim(), _password);
+            Auth.SetUser(result);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    async Task RegisterAsync()
+    {
+        _error = null;
+        _nameError = null;
+        _emailError = null;
+        _passwordError = null;
+
+        if (string.IsNullOrWhiteSpace(_name))     { _nameError = "Name is required"; return; }
+        if (string.IsNullOrWhiteSpace(_email))    { _emailError = "Email is required"; return; }
+        if (string.IsNullOrWhiteSpace(_password)) { _passwordError = "Password is required"; return; }
+
+        _loading = true;
+        try
+        {
+            var result = await Api.RegisterAsync(_name.Trim(), _email.Trim(), _password, null);
+            Auth.SetUser(result);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

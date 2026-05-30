@@ -10,4 +10,7 @@ public class Contribution
 
     public int GiftGoalId { get; set; }
     public GiftGoal GiftGoal { get; set; } = null!;
+
+    /// <summary>Paystack transaction reference — set when payment is verified. Null for legacy test contributions.</summary>
+    public string? PaystackReference { get; set; }
 }

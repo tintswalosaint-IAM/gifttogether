@@ -1,0 +1,307 @@
+@page "/r/{Slug}"
+@inject ApiService Api
+@inject IJSRuntime JS
+
+<TopBar />
+
+@if (_loading)
+{
+    <SkeletonLoader Variant="hero" Count="1" />
+    <SkeletonLoader Variant="goal-card" Count="2" />
+}
+else if (_error != null)
+{
+    <div class="error-state">
+        <p>@_error</p>
+        <button class="btn btn--primary" @onclick="LoadAsync">Try again</button>
+    </div>
+}
+else if (_registry != null)
+{
+    var shareUrl = $"{ApiService.BaseUrl}/r/{_registry.Slug}";
+
+    <!-- Hero section -->
+    <div class="hero-section">
+        @if (!string.IsNullOrEmpty(_registry.HeroImageUrl))
+        {
+            <img class="hero-image" src="@_registry.HeroImageUrl" alt="" />
+        }
+        else if (!string.IsNullOrEmpty(_registry.HeroBackgroundColor))
+        {
+            <div class="hero-image" style="background: @_registry.HeroBackgroundColor;"></div>
+        }
+        <div class="hero-scrim"></div>
+        <div class="hero-content">
+            @if (!string.IsNullOrEmpty(_registry.Creator.ProfileImageUrl))
+            {
+                <img class="hero-avatar" src="@_registry.Creator.ProfileImageUrl"
+                     alt="@_registry.Creator.Name" />
+            }
+            else
+            {
+                <div class="hero-avatar hero-avatar--placeholder" aria-hidden="true"></div>
+            }
+            <div class="hero-created-by">Created by</div>
+            <div class="hero-owner-name">@_registry.Creator.Name</div>
+            <h2 class="hero-title">@_registry.Name</h2>
+            @if (!string.IsNullOrEmpty(_registry.Creator.GuestMessage))
+            {
+                <p class="hero-message">@_registry.Creator.GuestMessage</p>
+            }
+        </div>
+    </div>
+
+    <!-- Progress card -->
+    <div class="page-content">
+        <div class="progress-card">
+            <div class="progress-card-amounts">
+                <span class="progress-card-raised">R @TotalRaised.ToString("N0")</span>
+                <span class="progress-card-target">of R @TotalTarget.ToString("N0") target</span>
+            </div>
+            <ProgressBar Value="@OverallPct" />
+            <div class="progress-card-meta">
+                <span>@((int)OverallPct)% funded</span>
+                <span>@_registry.GiftGoals.Count goal@(_registry.GiftGoals.Count != 1 ? "s" : "")</span>
+            </div>
+            <div class="share-row">
+                <button class="btn btn--outline btn--sm" @onclick="() => CopyLink(shareUrl)">
+                    🔗 Copy link
+                </button>
+                <button class="btn btn--whatsapp btn--sm" @onclick="() => ShareWhatsApp(shareUrl)">
+                    💬 WhatsApp
+                </button>
+            </div>
+        </div>
+
+        <!-- Trust banners -->
+        <div class="info-banner info-banner--warning">
+            <span aria-hidden="true">⚠</span>
+            <span>Only contribute if you personally know the registry owner.</span>
+        </div>
+
+        <!-- Goal list -->
+        <div class="goal-list">
+            @foreach (var g in _registry.GiftGoals)
+            {
+                <GoalCard Goal="@g" IsOwner="false" OnContribute="OpenContribute" />
+            }
+        </div>
+    </div>
+}
+
+<!-- Contribution bottom sheet -->
+<BottomSheet IsOpen="_showContribute" OnClose="CloseContribute"
+             Title='@($"Contribute to \"{_activeGoal?.Name}\"")'>
+    <ChildContent>
+        @if (!_contributionSuccess)
+        {
+            <!-- Contribution form -->
+            <div class="form-group">
+                <label for="contrib-name">
+                    Your name <span class="text-optional">(optional)</span>
+                </label>
+                <input id="contrib-name" type="text" @bind="_contributorName" @bind:event="oninput"
+                       placeholder="e.g. Aunt Lisa" />
+            </div>
+            <div class="form-group">
+                <label for="contrib-email">
+                    Email <span class="text-optional">(optional — for payment receipt)</span>
+                </label>
+                <input id="contrib-email" type="email" @bind="_email" @bind:event="oninput"
+                       placeholder="you@example.com" />
+            </div>
+            <div class="form-group @(_amountError != null ? "form-group--error" : "")">
+                <label for="contrib-amount">
+                    Amount (R) <span aria-hidden="true">*</span>
+                </label>
+                <input id="contrib-amount" class="form-input" type="number" @bind="_amount" @bind:event="oninput"
+                       placeholder="e.g. 200" min="1"
+                       aria-required="true" />
+                @if (_amountError != null)
+                {
+                    <span class="form-error-msg">⚠ @_amountError</span>
+                }
+            </div>
+            <div class="form-group">
+                <label for="contrib-message">
+                    Message <span class="text-optional">(optional)</span>
+                </label>
+                <textarea id="contrib-message" @bind="_message" @bind:event="oninput"
+                          placeholder="A little note for the recipient…"></textarea>
+            </div>
+
+            <!-- Fee breakdown -->
+            @if (!string.IsNullOrEmpty(_amount) && decimal.TryParse(_amount, out var previewAmt) && previewAmt > 0)
+            {
+                <div style="background: var(--color-surface-raised); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4); font-size: var(--text-sm);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-1);">
+                        <span style="color: var(--color-text-secondary);">Contribution</span>
+                        <span>R @previewAmt.ToString("N2")</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-2);">
+                        <span style="color: var(--color-text-secondary);">Service fee</span>
+                        <span>R 2.00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-weight: var(--weight-bold); border-top: 1px solid var(--color-border); padding-top: var(--space-2);">
+                        <span>Total charged</span>
+                        <span style="color: var(--color-primary);">R @((previewAmt + 2).ToString("N2"))</span>
+                    </div>
+                </div>
+            }
+
+            <button class="btn btn--primary btn--full" @onclick="ContributeAsync"
+                    disabled="@_actionLoading" aria-busy="@_actionLoading">
+                @if (_actionLoading)
+                {
+                    <span class="btn-spinner" aria-hidden="true"></span>
+                    <span>Redirecting to payment…</span>
+                }
+                else if (!string.IsNullOrEmpty(_amount) && decimal.TryParse(_amount, out var btnAmt) && btnAmt > 0)
+                {
+                    <span>Pay R @((btnAmt + 2).ToString("N2")) securely</span>
+                }
+                else
+                {
+                    <span>Pay securely</span>
+                }
+            </button>
+            <p style="text-align: center; font-size: var(--text-xs); color: var(--color-text-disabled); margin-top: var(--space-3);">
+                🔒 Secured by Paystack. We never store your card details.
+            </p>
+        }
+        else
+        {
+            <!-- Success state -->
+            <div class="contribution-success">
+                <div class="confetti-container" aria-hidden="true">
+                    @for (int i = 0; i < 12; i++)
+                    {
+                        var idx = i;
+                        var x = (idx * 8.33).ToString("F1", System.Globalization.CultureInfo.InvariantCulture) + "%";
+                        var delay = (idx * 0.15).ToString("F2", System.Globalization.CultureInfo.InvariantCulture) + "s";
+                        var color = _confettiColors[idx % _confettiColors.Length];
+                        <span class="confetti-piece"
+                              style="--confetti-x: @x; --confetti-delay: @delay; background: @color;"
+                              aria-hidden="true"></span>
+                    }
+                </div>
+                <div class="contribution-success-emoji" aria-hidden="true">🎉</div>
+                <h3 class="contribution-success-title">Thank you!</h3>
+                <p class="contribution-success-body">Your contribution has been recorded.</p>
+                <button class="btn btn--primary" @onclick="CloseContribute">Close</button>
+            </div>
+        }
+    </ChildContent>
+</BottomSheet>
+
+<Toast @ref="_toast" />
+
+@code {
+    [Parameter] public string Slug { get; set; } = "";
+
+    RegistryResponse? _registry;
+    string? _error;
+    bool _loading = true;
+    bool _showContribute;
+    bool _contributionSuccess;
+    bool _actionLoading;
+    GiftGoalResponse? _activeGoal;
+    string _contributorName = "", _amount = "", _message = "", _email = "";
+    string? _amountError;
+    Toast? _toast;
+
+    static readonly string[] _confettiColors = ["#6c63ff", "#22c55e", "#f59e0b", "#ef4444", "#0ea5e9", "#ec4899"];
+
+    decimal TotalRaised => _registry?.GiftGoals.Sum(g => g.TotalRaised) ?? 0;
+    decimal TotalTarget => _registry?.GiftGoals.Sum(g => g.TargetAmount) ?? 0;
+    decimal OverallPct  => TotalTarget > 0 ? Math.Min(100, Math.Round(TotalRaised / TotalTarget * 100, 1)) : 0;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+        try
+        {
+            _registry = await Api.GetRegistryBySlugAsync(Slug);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+            _registry = null;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    void OpenContribute(GiftGoalResponse g)
+    {
+        _activeGoal = g;
+        _contributorName = "";
+        _amount = "";
+        _message = "";
+        _email = "";
+        _amountError = null;
+        _contributionSuccess = false;
+        _showContribute = true;
+    }
+
+    void CloseContribute()
+    {
+        _showContribute = false;
+        _contributionSuccess = false;
+        _contributorName = "";
+        _amount = "";
+        _message = "";
+        _email = "";
+        _amountError = null;
+    }
+
+    async Task ContributeAsync()
+    {
+        _amountError = null;
+
+        if (!decimal.TryParse(_amount, out var parsedAmount) || parsedAmount <= 0)
+        {
+            _amountError = "Please enter a valid amount greater than zero.";
+            return;
+        }
+
+        _actionLoading = true;
+        try
+        {
+            // Initialize real Paystack payment
+            var init = await Api.InitializePaymentAsync(
+                _activeGoal!.Id,
+                parsedAmount,
+                string.IsNullOrWhiteSpace(_contributorName) ? null : _contributorName.Trim(),
+                string.IsNullOrWhiteSpace(_message) ? null : _message.Trim(),
+                string.IsNullOrWhiteSpace(_email) ? null : _email.Trim());
+
+            // Close the sheet and open Paystack checkout in the browser
+            CloseContribute();
+            await JS.InvokeVoidAsync("open", init.AuthorizationUrl, "_blank");
+        }
+        catch (Exception ex)
+        {
+            _amountError = ex.Message;
+        }
+        finally
+        {
+            _actionLoading = false;
+        }
+    }
+
+    async Task CopyLink(string url)
+    {
+        await JS.InvokeVoidAsync("copyToClipboard", url);
+        if (_toast != null)
+            await _toast.Show("✓ Link copied!");
+    }
+
+    async Task ShareWhatsApp(string url) =>
+        await JS.InvokeVoidAsync("shareWhatsApp", url);
+}

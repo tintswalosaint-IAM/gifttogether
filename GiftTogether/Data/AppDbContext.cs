@@ -11,6 +11,7 @@ public class AppDbContext : DbContext
     public DbSet<Registry> Registries => Set<Registry>();
     public DbSet<GiftGoal> GiftGoals => Set<GiftGoal>();
     public DbSet<Contribution> Contributions => Set<Contribution>();
+    public DbSet<PendingPayment> PendingPayments => Set<PendingPayment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -31,6 +32,18 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<Contribution>()
             .Property(c => c.Amount)
+            .HasColumnType("decimal(18,2)");
+
+        modelBuilder.Entity<PendingPayment>()
+            .HasIndex(p => p.Reference)
+            .IsUnique();
+
+        modelBuilder.Entity<PendingPayment>()
+            .Property(p => p.ContributionAmount)
+            .HasColumnType("decimal(18,2)");
+
+        modelBuilder.Entity<PendingPayment>()
+            .Property(p => p.GrossAmount)
             .HasColumnType("decimal(18,2)");
     }
 }

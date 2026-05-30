@@ -37,9 +37,6 @@ public class AuthController : ControllerBase
             string.IsNullOrWhiteSpace(req.Password))
             return BadRequest(new { error = "Name, email, and password are required." });
 
-        if (string.IsNullOrWhiteSpace(req.GuestMessage))
-            return BadRequest(new { error = "A message to your guests is required." });
-
         if (req.Password.Length < 6)
             return BadRequest(new { error = "Password must be at least 6 characters." });
 
@@ -53,7 +50,7 @@ public class AuthController : ControllerBase
             Email = req.Email.ToLower().Trim(),
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.Password),
             ProfileImageUrl = string.IsNullOrWhiteSpace(req.ProfileImageUrl) ? null : req.ProfileImageUrl.Trim(),
-            GuestMessage = req.GuestMessage.Trim()
+            GuestMessage = string.IsNullOrWhiteSpace(req.GuestMessage) ? null : req.GuestMessage.Trim()
         };
 
         _db.Users.Add(user);

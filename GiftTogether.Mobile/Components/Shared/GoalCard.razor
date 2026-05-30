@@ -1,0 +1,88 @@
+@namespace GiftTogether.Mobile.Components.Shared
+
+<article class="goal-card @(IsFunded ? "goal-card--funded" : "")">
+    @if (!string.IsNullOrEmpty(Goal.ImageUrl))
+    {
+        <img class="goal-card-image" src="@Goal.ImageUrl" alt="@Goal.Name" loading="lazy" />
+    }
+    else
+    {
+        <div class="goal-card-image-placeholder" aria-hidden="true">🎁</div>
+    }
+    <div class="goal-card-body">
+        <div class="goal-card-header">
+            <h3 class="goal-card-name">@Goal.Name</h3>
+            <span class="badge badge--primary">R @Goal.TargetAmount.ToString("N0")</span>
+        </div>
+        @if (!string.IsNullOrEmpty(Goal.ProductLink))
+        {
+            <a class="goal-card-link" href="@Goal.ProductLink" target="_blank" rel="noopener noreferrer">
+                View product ↗
+            </a>
+        }
+        @if (!string.IsNullOrEmpty(Goal.Description))
+        {
+            <p class="goal-card-desc">@Goal.Description</p>
+        }
+        <ProgressBar Value="@FundedPct" />
+        <div class="goal-card-amounts">
+            <span><strong>R @Goal.TotalRaised.ToString("N0")</strong> raised</span>
+            <span>@((int)FundedPct)%</span>
+        </div>
+    </div>
+    <div class="goal-card-actions">
+        @if (IsFunded)
+        {
+            <div class="funded-badge" role="status">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Fully funded
+            </div>
+        }
+        else if (IsOwner)
+        {
+            <button class="btn btn--ghost btn--danger btn--sm" @onclick="HandleRemove">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Remove goal
+            </button>
+        }
+        else
+        {
+            <button class="btn btn--primary btn--full" @onclick="HandleContribute">
+                🎁 Contribute
+            </button>
+        }
+    </div>
+    @if (Goal.Contributions.Count > 0)
+    {
+        <div class="goal-card-contribs" style="padding: 0 var(--space-4) var(--space-3); font-size: var(--text-xs); color: var(--color-text-secondary);">
+            @{
+                var shown = Goal.Contributions.Take(3).ToList();
+                var names = string.Join(", ", shown.Select(c => c.ContributorName));
+                var extra = Goal.Contributions.Count - shown.Count;
+            }
+            <span>🎉 @names@(extra > 0 ? $" +{extra} more" : "") contributed</span>
+        </div>
+    }
+</article>
+
+@code {
+    [Parameter, EditorRequired] public GiftGoalResponse Goal { get; set; } = default!;
+    [Parameter] public bool IsOwner { get; set; }
+    [Parameter] public EventCallback<GiftGoalResponse> OnContribute { get; set; }
+    [Parameter] public EventCallback<GiftGoalResponse> OnRemove { get; set; }
+
+    private decimal FundedPct => Goal.TargetAmount > 0
+        ? Math.Min(100, Math.Round(Goal.TotalRaised / Goal.TargetAmount * 100, 1))
+        : 0;
+
+    private bool IsFunded => FundedPct >= 100;
+
+    private Task HandleContribute() => OnContribute.InvokeAsync(Goal);
+    private Task HandleRemove() => OnRemove.InvokeAsync(Goal);
+}

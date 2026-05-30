@@ -1,0 +1,124 @@
+/*
+ * tokens.css — Design Token Foundation
+ * NEO Mobile Design System
+ *
+ * All CSS custom properties are defined here as the single source of truth.
+ * Dark mode overrides live in dark.css.
+ */
+
+:root {
+
+  /* ── Color Palette ─────────────────────────────────────────────────────── */
+
+  /* Primary brand colors — NEO purple */
+  --color-primary:          #7C3AED;
+  --color-primary-dark:     #6D28D9;
+  --color-primary-light:    #EDE9FE;
+
+  /* NEO blue — splash/landing screen accent only */
+  --color-neo-blue:         #0C8AFF;
+  --color-neo-blue-dark:    #0070E0;
+
+  /* Surface colors */
+  --color-surface:          #ffffff;
+  --color-surface-raised:   #faf9ff;
+  --color-background:       #f5f3ff;
+
+  /* Text colors */
+  --color-text-primary:     #1a1033;
+  --color-text-secondary:   #6b7280;
+  --color-text-disabled:    #9ca3af;
+
+  /* Border */
+  --color-border:           #e5e7eb;
+
+  /* Semantic: success */
+  --color-success:          #22c55e;
+  --color-success-bg:       #dcfce7;
+  --color-success-text:     #166534;
+
+  /* Semantic: danger */
+  --color-danger:           #ef4444;
+  --color-danger-bg:        #fee2e2;
+  --color-danger-text:      #991b1b;
+
+  /* Semantic: warning */
+  --color-warning:          #f59e0b;
+  --color-warning-bg:       #fffbeb;
+  --color-warning-text:     #92400e;
+
+  /* Semantic: info */
+  --color-info-bg:          #f0f9ff;
+  --color-info-text:        #0c4a6e;
+
+  /* Third-party brand */
+  --color-whatsapp:         #25d366;
+
+
+  /* ── Typography Scale ──────────────────────────────────────────────────── */
+
+  --text-xs:    0.75rem;    /* 12px */
+  --text-sm:    0.8125rem;  /* 13px */
+  --text-base:  1rem;       /* 16px */
+  --text-lg:    1.125rem;   /* 18px */
+  --text-xl:    1.25rem;    /* 20px */
+  --text-2xl:   1.5rem;     /* 24px */
+  --text-3xl:   1.875rem;   /* 30px */
+  --text-4xl:   2.25rem;    /* 36px */
+
+  --weight-regular:   400;
+  --weight-medium:    500;
+  --weight-semibold:  600;
+  --weight-bold:      700;
+  --weight-extrabold: 800;
+
+  --leading-tight:   1.2;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.65;
+
+
+  /* ── Spacing (4px base unit) ───────────────────────────────────────────── */
+
+  --space-1:   0.25rem;
+  --space-2:   0.5rem;
+  --space-3:   0.75rem;
+  --space-4:   1rem;
+  --space-5:   1.25rem;
+  --space-6:   1.5rem;
+  --space-7:   1.75rem;
+  --space-8:   2rem;
+  --space-9:   2.25rem;
+  --space-10:  2.5rem;
+  --space-11:  2.75rem;
+  --space-12:  3rem;
+  --space-13:  3.25rem;
+  --space-14:  3.5rem;
+  --space-15:  3.75rem;
+  --space-16:  4rem;
+
+
+  /* ── Border Radius ─────────────────────────────────────────────────────── */
+
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   20px;
+  --radius-full: 9999px;
+
+
+  /* ── Transitions ───────────────────────────────────────────────────────── */
+
+  --transition-fast:   150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base:   250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow:   400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+
+  /* ── Elevation (Box Shadows) ───────────────────────────────────────────── */
+
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md:  0 4px 12px rgba(124,58,237,0.12), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-lg:  0 10px 30px rgba(124,58,237,0.18), 0 4px 8px rgba(0,0,0,0.08);
+  --shadow-xl:  0 20px 50px rgba(124,58,237,0.22), 0 8px 16px rgba(0,0,0,0.10);
+
+}

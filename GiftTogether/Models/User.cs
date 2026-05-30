@@ -13,6 +13,9 @@ public class User
     /// <summary>A short personal message shown to guests on the public registry page.</summary>
     public string? GuestMessage { get; set; }
 
+    /// <summary>Paystack subaccount code for receiving payouts (e.g. ACCT_xxxxxxxx).</summary>
+    public string? PaystackSubaccountCode { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<Registry> Registries { get; set; } = new List<Registry>();

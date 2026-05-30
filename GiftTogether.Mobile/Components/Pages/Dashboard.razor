@@ -1,0 +1,226 @@
+@page "/dashboard"
+@page "/"
+@inject ApiService Api
+@inject AuthState Auth
+@inject NavigationManager Nav
+
+<TopBar>
+    <RightContent>
+        <div style="position: relative;">
+            <button class="avatar-btn" @onclick="() => _showMenu = !_showMenu"
+                    aria-label="User menu" aria-expanded="@_showMenu.ToString().ToLower()">
+                @GetInitials(Auth.UserName)
+            </button>
+            @if (_showMenu)
+            {
+                <div class="avatar-menu" role="menu">
+                    <button class="avatar-menu-item" role="menuitem" @onclick="Logout">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor"
+                                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <polyline points="16 17 21 12 16 7" stroke="currentColor"
+                                      stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor"
+                                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Log out
+                    </button>
+                </div>
+            }
+        </div>
+    </RightContent>
+</TopBar>
+
+<div class="dashboard-header">
+    <div>
+        <div class="dashboard-greeting">@GetGreeting(Auth.UserName, DateTime.Now)</div>
+    </div>
+    @if (!_loading && _registries != null)
+    {
+        var (count, pct) = ComputeStats(_registries);
+        <span class="stat-pill">@count registr@(count == 1 ? "y" : "ies") · @pct% funded</span>
+    }
+</div>
+
+<div class="page-content">
+    @if (_loading)
+    {
+        <SkeletonLoader Variant="registry-card" Count="3" />
+    }
+    else if (_error != null)
+    {
+        <div class="error-state">
+            <div class="error-state-icon">⚠</div>
+            <p class="error-state-message">@_error</p>
+            <button class="btn btn--outline" @onclick="LoadAsync">Try again</button>
+        </div>
+    }
+    else if (_registries?.Count == 0)
+    {
+        <EmptyState Icon="🎁" Title="No registries yet"
+                    Body="Create your first registry and start collecting gifts.">
+            <ActionContent>
+                <button class="btn btn--primary" @onclick='() => Nav.NavigateTo("/create")'>
+                    Create your first registry
+                </button>
+            </ActionContent>
+        </EmptyState>
+    }
+    else
+    {
+        @foreach (var r in _registries!)
+        {
+            var reg = r;
+            <RegistryCard Registry="@reg" OnTap="() => GoToRegistry(reg)" />
+        }
+    }
+</div>
+
+<button class="fab" @onclick='() => Nav.NavigateTo("/create")' aria-label="Create new registry">+</button>
+
+<style>
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: var(--space-5) var(--space-5) var(--space-3);
+        gap: var(--space-3);
+    }
+
+    .dashboard-greeting {
+        font-size: var(--text-2xl);
+        font-weight: var(--weight-extrabold);
+        color: var(--color-text-primary);
+        line-height: var(--leading-tight);
+    }
+
+    .stat-pill {
+        display: inline-flex;
+        align-items: center;
+        background: var(--color-primary-light);
+        color: var(--color-primary);
+        font-size: var(--text-xs);
+        font-weight: var(--weight-semibold);
+        padding: var(--space-1) var(--space-3);
+        border-radius: var(--radius-full);
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .avatar-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius-full);
+        background: var(--color-primary-light);
+        color: var(--color-primary);
+        font-size: var(--text-sm);
+        font-weight: var(--weight-bold);
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .avatar-btn:active {
+        opacity: 0.8;
+    }
+
+    .avatar-menu {
+        position: absolute;
+        top: calc(100% + var(--space-2));
+        right: 0;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        min-width: 140px;
+        z-index: 60;
+        overflow: hidden;
+    }
+
+    .avatar-menu-item {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        width: 100%;
+        padding: var(--space-3) var(--space-4);
+        background: none;
+        border: none;
+        font-size: var(--text-sm);
+        font-weight: var(--weight-medium);
+        color: var(--color-text-primary);
+        cursor: pointer;
+        min-height: 44px;
+        font-family: inherit;
+    }
+
+    .avatar-menu-item:hover {
+        background: var(--color-background);
+    }
+</style>
+
+@code {
+    List<RegistryResponse>? _registries;
+    string? _error;
+    bool _loading = true;
+    bool _showMenu = false;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+        _showMenu = false;
+        try
+        {
+            _registries = await Api.GetMyRegistriesAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    void GoToRegistry(RegistryResponse r) => Nav.NavigateTo($"/registry/{r.Id}");
+
+    void Logout()
+    {
+        Auth.Logout();
+        Nav.NavigateTo("/");
+    }
+
+    static string GetInitials(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "?";
+        var parts = name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0][0].ToString().ToUpper();
+        return $"{parts[0][0]}{parts[^1][0]}".ToUpper();
+    }
+
+    static string GetGreeting(string? fullName, DateTime now)
+    {
+        var firstName = fullName?.Split(' ').FirstOrDefault() ?? "there";
+        var salutation = now.Hour switch
+        {
+            >= 5 and < 12 => "Good morning",
+            >= 12 and < 17 => "Good afternoon",
+            _ => "Good evening"
+        };
+        return $"{salutation}, {firstName}";
+    }
+
+    static (int count, int aggregatePct) ComputeStats(List<RegistryResponse> registries)
+    {
+        var count = registries.Count;
+        var totalRaised = registries.SelectMany(r => r.GiftGoals).Sum(g => g.TotalRaised);
+        var totalTarget = registries.SelectMany(r => r.GiftGoals).Sum(g => g.TargetAmount);
+        var pct = totalTarget > 0 ? (int)Math.Min(100, Math.Round(totalRaised / totalTarget * 100)) : 0;
+        return (count, pct);
+    }
+}
