@@ -37,6 +37,22 @@
       "PackagePath": "staticwebassets\\css\\tokens.css"
     },
     {
+      "Id": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\images\\onboarding\\onboard-1.png",
+      "PackagePath": "staticwebassets\\images\\onboarding\\onboard-1.png"
+    },
+    {
+      "Id": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\images\\onboarding\\onboard-2.png",
+      "PackagePath": "staticwebassets\\images\\onboarding\\onboard-2.png"
+    },
+    {
+      "Id": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\images\\onboarding\\onboard-3.png",
+      "PackagePath": "staticwebassets\\images\\onboarding\\onboard-3.png"
+    },
+    {
+      "Id": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\images\\onboarding\\onboard-4.png",
+      "PackagePath": "staticwebassets\\images\\onboarding\\onboard-4.png"
+    },
+    {
       "Id": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\index.html",
       "PackagePath": "staticwebassets\\index.html"
     },

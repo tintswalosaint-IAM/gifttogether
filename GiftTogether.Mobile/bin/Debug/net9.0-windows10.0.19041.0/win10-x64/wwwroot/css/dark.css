@@ -6,16 +6,16 @@
 /* ── Dark Mode Token Overrides ─────────────────────────────────────────────── */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-primary:          #9F67FF;
-    --color-primary-dark:     #7C3AED;
-    --color-primary-light:    #2e1a5e;
-    --color-surface:          #1c1b2e;
-    --color-surface-raised:   #252440;
-    --color-background:       #13121f;
-    --color-text-primary:     #f0eeff;
+    --color-primary:          #38A8FF;
+    --color-primary-dark:     #0C8AFF;
+    --color-primary-light:    #0a2a4a;
+    --color-surface:          #0f1923;
+    --color-surface-raised:   #1a2535;
+    --color-background:       #0a1220;
+    --color-text-primary:     #0D0D0D;
     --color-text-secondary:   #9ca3af;
     --color-text-disabled:    #6b7280;
-    --color-border:           #2d2a5e;
+    --color-border:           #1a2d45;
     --color-success:          #4ade80;
     --color-success-bg:       #14532d;
     --color-success-text:     #bbf7d0;

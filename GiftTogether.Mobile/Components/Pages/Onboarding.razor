@@ -1,0 +1,208 @@
+@page "/onboarding"
+@inject NavigationManager Nav
+
+<div class="onboarding-screen">
+
+    <!-- Back button (hidden on screen 1) -->
+    @if (_screen > 1)
+    {
+        <button class="onboarding-back" @onclick="GoBack" aria-label="Go back">‹</button>
+    }
+
+    <!-- Screen 1: Make gifting easier -->
+    @if (_screen == 1)
+    {
+        <img class="onboarding-illustration"
+             src="/images/onboarding/onboard-1.png"
+             alt="Make gifting easier illustration"
+             style="width: 363px; height: 363px; top: 91px; left: 13px;" />
+
+        <h1 class="onboarding-headline">Make gifting easier</h1>
+        <p class="onboarding-body">No guessing. No awkward group chats. Just a better way to give a gift.</p>
+
+        <button class="onboarding-skip" @onclick="Skip">Skip</button>
+        <button class="onboarding-next" @onclick="Next">Next</button>
+    }
+
+    <!-- Screen 2: Everyone contributes -->
+    else if (_screen == 2)
+    {
+        <img class="onboarding-illustration"
+             src="/images/onboarding/onboard-2.png"
+             alt="Everyone contributes illustration"
+             style="width: 350px; height: 315px; top: 105px; left: 24px;" />
+
+        <h1 class="onboarding-headline">Everyone contributes</h1>
+        <p class="onboarding-body">Share what you would love, invite your people, and watch it come together.</p>
+
+        <button class="onboarding-skip" @onclick="Skip">Skip</button>
+        <button class="onboarding-next" @onclick="Next">Next</button>
+    }
+
+    <!-- Screen 3: Give with confidence -->
+    else if (_screen == 3)
+    {
+        <img class="onboarding-illustration"
+             src="/images/onboarding/onboard-3.png"
+             alt="Give with confidence illustration"
+             style="width: 344px; height: 322px; top: 123px; left: 30px;" />
+
+        <h1 class="onboarding-headline">Give with confidence</h1>
+        <p class="onboarding-body">Every contribution is clear, secure, and goes exactly where it should.</p>
+
+        <button class="onboarding-skip" @onclick="Skip">Skip</button>
+        <button class="onboarding-next" @onclick="Next">Next</button>
+    }
+
+    <!-- Screen 4: Ready — New Collection -->
+    else if (_screen == 4)
+    {
+        <img class="onboarding-illustration"
+             src="/images/onboarding/onboard-4.png"
+             alt="Ready to start illustration"
+             style="width: 275px; height: 342px; top: 122px; left: 74px;" />
+
+        <button class="onboarding-cta" @onclick="StartCreating">+ New Collection</button>
+    }
+
+</div>
+
+<style>
+    .onboarding-screen {
+        position: relative;
+        width: 100%;
+        min-height: 100vh;
+        background: #FFFFFF;
+        overflow: hidden;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .onboarding-back {
+        position: absolute;
+        top: 51px;
+        left: 20px;
+        width: 57px;
+        height: 54px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 22px;
+        color: #0D0D0D;
+    }
+
+    .onboarding-illustration {
+        position: absolute;
+        object-fit: contain;
+    }
+
+    .onboarding-headline {
+        position: absolute;
+        left: 33px;
+        top: 454px;
+        font-size: 36px;
+        font-weight: 800;
+        color: #000000;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        margin: 0;
+    }
+
+    .onboarding-body {
+        position: absolute;
+        left: 33px;
+        top: 541px;
+        width: 334px;
+        font-size: 20px;
+        font-weight: 300;
+        color: #000000;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    .onboarding-skip {
+        position: absolute;
+        left: 10px;
+        top: 731px;
+        padding: 10px;
+        font-size: 20px;
+        font-weight: 300;
+        color: #000000;
+        background: none;
+        border: none;
+        cursor: pointer;
+        min-height: 44px;
+    }
+
+    .onboarding-next {
+        position: absolute;
+        right: 20px;
+        top: 733px;
+        background: #0C8AFF;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-size: 20px;
+        font-weight: 800;
+        cursor: pointer;
+        min-height: 44px;
+        min-width: 67px;
+    }
+
+    .onboarding-next:active,
+    .onboarding-cta:active {
+        transform: scale(0.97);
+    }
+
+    .onboarding-cta {
+        position: absolute;
+        left: 77px;
+        top: 587px;
+        width: 252px;
+        height: 64px;
+        background: #0C8AFF;
+        color: #FFFBFB;
+        border: none;
+        border-radius: 10px;
+        font-size: 20px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+</style>
+
+@code {
+    int _screen = 1;
+
+    void Next()
+    {
+        if (_screen < 4) _screen++;
+    }
+
+    void GoBack()
+    {
+        if (_screen > 1) _screen--;
+    }
+
+    void Skip()
+    {
+        MarkComplete();
+        Nav.NavigateTo("/dashboard");
+    }
+
+    void StartCreating()
+    {
+        MarkComplete();
+        Nav.NavigateTo("/create");
+    }
+
+    static void MarkComplete()
+    {
+        Preferences.Default.Set("onboarding_complete", true);
+    }
+}

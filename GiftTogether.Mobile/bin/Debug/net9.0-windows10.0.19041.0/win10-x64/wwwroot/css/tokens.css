@@ -10,22 +10,18 @@
 
   /* ── Color Palette ─────────────────────────────────────────────────────── */
 
-  /* Primary brand colors — NEO purple */
-  --color-primary:          #7C3AED;
-  --color-primary-dark:     #6D28D9;
-  --color-primary-light:    #EDE9FE;
-
-  /* NEO blue — splash/landing screen accent only */
-  --color-neo-blue:         #0C8AFF;
-  --color-neo-blue-dark:    #0070E0;
+  /* Primary brand colors — NEO blue */
+  --color-primary:          #0C8AFF;
+  --color-primary-dark:     #0055CC;
+  --color-primary-light:    #E8F3FF;
 
   /* Surface colors */
   --color-surface:          #ffffff;
-  --color-surface-raised:   #faf9ff;
-  --color-background:       #f5f3ff;
+  --color-surface-raised:   #F0F4F8;
+  --color-background:       #F5F7FA;
 
   /* Text colors */
-  --color-text-primary:     #1a1033;
+  --color-text-primary:     #0D0D0D;
   --color-text-secondary:   #6b7280;
   --color-text-disabled:    #9ca3af;
 
@@ -117,8 +113,8 @@
   /* ── Elevation (Box Shadows) ───────────────────────────────────────────── */
 
   --shadow-sm:  0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
-  --shadow-md:  0 4px 12px rgba(124,58,237,0.12), 0 2px 4px rgba(0,0,0,0.06);
-  --shadow-lg:  0 10px 30px rgba(124,58,237,0.18), 0 4px 8px rgba(0,0,0,0.08);
-  --shadow-xl:  0 20px 50px rgba(124,58,237,0.22), 0 8px 16px rgba(0,0,0,0.10);
+  --shadow-md:  0 4px 12px rgba(12,138,255,0.12), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-lg:  0 10px 30px rgba(12,138,255,0.18), 0 4px 8px rgba(0,0,0,0.08);
+  --shadow-xl:  0 20px 50px rgba(12,138,255,0.22), 0 8px 16px rgba(0,0,0,0.10);
 
 }

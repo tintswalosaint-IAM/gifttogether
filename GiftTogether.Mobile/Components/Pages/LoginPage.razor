@@ -173,6 +173,7 @@
         {
             var result = await Api.RegisterAsync(_name.Trim(), _email.Trim(), _password, null);
             Auth.SetUser(result);
+            Nav.NavigateTo("/onboarding");
         }
         catch (Exception ex)
         {

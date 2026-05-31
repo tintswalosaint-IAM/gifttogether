@@ -132,12 +132,12 @@
       <RelatedAsset></RelatedAsset>
       <AssetTraitName></AssetTraitName>
       <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>kz36enen4t</Fingerprint>
-      <Integrity>UHxNBpuP3uOxUwTF4L0E/CHy1fEa6LH7fl6sHFR8l78=</Integrity>
+      <Fingerprint>5azbweb97o</Fingerprint>
+      <Integrity>o3AhyJl+qJvgOhtw1RAyXcatBomac+MnqMmzjl09LUE=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <FileLength>1825</FileLength>
-      <LastWriteTime>Mon, 11 May 2026 14:11:27 GMT</LastWriteTime>
+      <LastWriteTime>Sun, 31 May 2026 09:35:39 GMT</LastWriteTime>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\dark.css'))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\tokens.css'))">
@@ -152,12 +152,12 @@
       <RelatedAsset></RelatedAsset>
       <AssetTraitName></AssetTraitName>
       <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>x3lbl73i1p</Fingerprint>
-      <Integrity>Y1+QbYqIf9HG+iarMnGakqca+KOnVvdPSu3bTDXAZNY=</Integrity>
+      <Fingerprint>weuzickwp6</Fingerprint>
+      <Integrity>uMb8enUfhiVw01/IT0xG4a3jLWT2sW7RLMm+eDahA0s=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <FileLength>4221</FileLength>
-      <LastWriteTime>Mon, 11 May 2026 14:10:43 GMT</LastWriteTime>
+      <FileLength>4085</FileLength>
+      <LastWriteTime>Sun, 31 May 2026 09:33:03 GMT</LastWriteTime>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\tokens.css'))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\GiftTogether.Mobile.styles.css'))">
@@ -179,6 +179,86 @@
       <FileLength>5481</FileLength>
       <LastWriteTime>Wed, 29 Apr 2026 13:36:39 GMT</LastWriteTime>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\GiftTogether.Mobile.styles.css'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\images\onboarding\onboard-1.png'))">
+      <SourceType>Package</SourceType>
+      <SourceId>GiftTogether.Mobile</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>/</BasePath>
+      <RelativePath>images/onboarding/onboard-1.png</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>2zbmqefcav</Fingerprint>
+      <Integrity>4tfNsWDrrK7g0YGUwZoS1AHIPMTVkqThAeQaC+H8cQ0=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <FileLength>80901</FileLength>
+      <LastWriteTime>Sun, 31 May 2026 09:32:15 GMT</LastWriteTime>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\images\onboarding\onboard-1.png'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\images\onboarding\onboard-2.png'))">
+      <SourceType>Package</SourceType>
+      <SourceId>GiftTogether.Mobile</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>/</BasePath>
+      <RelativePath>images/onboarding/onboard-2.png</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>px3rsx2cj1</Fingerprint>
+      <Integrity>rSwgATpWo58m9dmRzWUpvsEmJLb47hp0x/02Iy+K2EQ=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <FileLength>135681</FileLength>
+      <LastWriteTime>Sun, 31 May 2026 09:32:16 GMT</LastWriteTime>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\images\onboarding\onboard-2.png'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\images\onboarding\onboard-3.png'))">
+      <SourceType>Package</SourceType>
+      <SourceId>GiftTogether.Mobile</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>/</BasePath>
+      <RelativePath>images/onboarding/onboard-3.png</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>9xjctzj5b2</Fingerprint>
+      <Integrity>I/fiCDbYmzKB0YcBDlVIo6uq+LzOyLM7sITNKLwwMP0=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <FileLength>62577</FileLength>
+      <LastWriteTime>Sun, 31 May 2026 09:32:17 GMT</LastWriteTime>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\images\onboarding\onboard-3.png'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\images\onboarding\onboard-4.png'))">
+      <SourceType>Package</SourceType>
+      <SourceId>GiftTogether.Mobile</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>/</BasePath>
+      <RelativePath>images/onboarding/onboard-4.png</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>abrza55pgt</Fingerprint>
+      <Integrity>BoOym0KesqMWkRoDGiELI9j9RSv6o8P/XDj1eYT/EzI=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <FileLength>135847</FileLength>
+      <LastWriteTime>Sun, 31 May 2026 09:32:18 GMT</LastWriteTime>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\images\onboarding\onboard-4.png'))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\index.html'))">
       <SourceType>Package</SourceType>
