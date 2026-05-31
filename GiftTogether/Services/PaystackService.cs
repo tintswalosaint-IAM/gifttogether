@@ -179,12 +179,19 @@ public class PaystackService
     /// Returns the subaccount_code.
     /// </summary>
     public async Task<string> CreateSubaccountAsync(
-        string businessName, string bankCode, string accountNumber, string? existingCode)
+        string businessName, string bankCode, string accountNumber,
+        string? accountType, string? existingCode)
     {
         if (!string.IsNullOrEmpty(existingCode))
         {
-            // Update existing subaccount
-            var updateBody = new { settlement_bank = bankCode, account_number = accountNumber };
+            var updateBody = new Dictionary<string, object>
+            {
+                ["settlement_bank"] = bankCode,
+                ["account_number"] = accountNumber
+            };
+            if (!string.IsNullOrWhiteSpace(accountType))
+                updateBody["account_type"] = accountType;
+
             var updateRes = await _http.PutAsJsonAsync($"subaccount/{existingCode}", updateBody, JsonOpts);
             var updateJson = await updateRes.Content.ReadFromJsonAsync<JsonElement>(JsonOpts);
             if (!updateRes.IsSuccessStatusCode || !updateJson.GetProperty("status").GetBoolean())
@@ -195,13 +202,16 @@ public class PaystackService
             return existingCode;
         }
 
-        var body = new
+        var body = new Dictionary<string, object>
         {
-            business_name = businessName,
-            settlement_bank = bankCode,
-            account_number = accountNumber,
-            percentage_charge = 0
+            ["business_name"] = businessName,
+            ["settlement_bank"] = bankCode,
+            ["account_number"] = accountNumber,
+            ["percentage_charge"] = 0
         };
+        if (!string.IsNullOrWhiteSpace(accountType))
+            body["account_type"] = accountType;
+
         var res = await _http.PostAsJsonAsync("subaccount", body, JsonOpts);
         var json = await res.Content.ReadFromJsonAsync<JsonElement>(JsonOpts);
 

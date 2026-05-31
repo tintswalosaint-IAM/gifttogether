@@ -2,11 +2,12 @@
 @inject ApiService Api
 @inject NavigationManager Nav
 
-<TopBar ShowBack="true" OnBack="GoBack" Title="Bank account" />
+<TopBar ShowBack="true" OnBack="GoBack" Title="Payout details" />
 
 <div class="page-content">
     @if (_loadingBanks)
     {
+        <div class="skeleton skeleton--text" style="height: 48px; margin-bottom: var(--space-4);"></div>
         <div class="skeleton skeleton--text" style="height: 48px; margin-bottom: var(--space-4);"></div>
         <div class="skeleton skeleton--text" style="height: 48px; margin-bottom: var(--space-4);"></div>
         <div class="skeleton skeleton--text" style="height: 48px; margin-bottom: var(--space-6);"></div>
@@ -20,18 +21,33 @@
     }
     else
     {
-        <p class="bank-setup-intro">
-            Add your bank account so contributors can pay directly into your account.
+        <p class="bank-intro">
+            Contributors pay you directly via Paystack. Add your bank details once and
+            Paystack settles funds to your account within 2 business days.
         </p>
 
+        <!-- Account Holder Name -->
+        <div class="form-group">
+            <label for="account-holder">Account holder name <span aria-hidden="true">*</span></label>
+            <input id="account-holder" type="text"
+                   placeholder="e.g. Jane Dlamini"
+                   @bind="_accountHolderName" @bind:event="oninput"
+                   class="@(_accountHolderError != null ? "input--error" : "")"
+                   aria-required="true" />
+            @if (_accountHolderError != null)
+            {
+                <span class="field-error" role="alert">⚠ @_accountHolderError</span>
+            }
+        </div>
+
+        <!-- Bank Name -->
         <div class="form-group">
             <label for="bank-name">Bank name <span aria-hidden="true">*</span></label>
             <select id="bank-name"
-                    class="@(_bankCodeError != null ? "input--error" : "")"
+                    class="form-select @(_bankCodeError != null ? "input--error" : "")"
                     value="@_bankCode"
                     @onchange="OnBankChanged"
-                    aria-required="true"
-                    aria-describedby="@(_bankCodeError != null ? "bank-name-error" : null)">
+                    aria-required="true">
                 <option value="">Select your bank…</option>
                 @foreach (var bank in _banks)
                 {
@@ -40,41 +56,56 @@
             </select>
             @if (_bankCodeError != null)
             {
-                <span id="bank-name-error" class="field-error" role="alert">⚠ @_bankCodeError</span>
+                <span class="field-error" role="alert">⚠ @_bankCodeError</span>
             }
         </div>
 
+        <!-- Account Number -->
         <div class="form-group">
             <label for="account-number">Account number <span aria-hidden="true">*</span></label>
-            <input id="account-number"
-                   type="tel"
-                   inputmode="numeric"
+            <input id="account-number" type="tel" inputmode="numeric"
                    placeholder="e.g. 1234567890"
-                   @bind="_accountNumber"
-                   @bind:event="oninput"
+                   @bind="_accountNumber" @bind:event="oninput"
                    class="@(_accountNumberError != null ? "input--error" : "")"
-                   aria-required="true"
-                   aria-describedby="@(_accountNumberError != null ? "account-number-error" : null)" />
+                   aria-required="true" />
             @if (_accountNumberError != null)
             {
-                <span id="account-number-error" class="field-error" role="alert">⚠ @_accountNumberError</span>
+                <span class="field-error" role="alert">⚠ @_accountNumberError</span>
             }
         </div>
 
+        <!-- Account Type -->
         <div class="form-group">
-            <label for="account-holder">Account holder name <span aria-hidden="true">*</span></label>
-            <input id="account-holder"
-                   type="text"
-                   placeholder="e.g. Jane Dlamini"
-                   @bind="_accountHolderName"
-                   @bind:event="oninput"
-                   class="@(_accountHolderError != null ? "input--error" : "")"
-                   aria-required="true"
-                   aria-describedby="@(_accountHolderError != null ? "account-holder-error" : null)" />
-            @if (_accountHolderError != null)
-            {
-                <span id="account-holder-error" class="field-error" role="alert">⚠ @_accountHolderError</span>
-            }
+            <label>Account type <span aria-hidden="true">*</span></label>
+            <div class="radio-group" role="radiogroup" aria-label="Account type">
+                <label class="radio-label">
+                    <input type="radio" name="account-type" value="cheque"
+                           checked="@(_accountType == "cheque")"
+                           @onchange='() => _accountType = "cheque"' />
+                    <span>Cheque</span>
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="account-type" value="savings"
+                           checked="@(_accountType == "savings")"
+                           @onchange='() => _accountType = "savings"' />
+                    <span>Savings</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Branch Code (auto-filled) -->
+        <div class="form-group">
+            <label for="branch-code">
+                Branch code
+                @if (!string.IsNullOrEmpty(_branchCode))
+                {
+                    <span class="field-hint">Auto-filled</span>
+                }
+            </label>
+            <input id="branch-code" type="tel" inputmode="numeric"
+                   placeholder="e.g. 632005"
+                   value="@_branchCode"
+                   @oninput="e => _branchCode = e.Value?.ToString() ?? string.Empty" />
         </div>
 
         @if (_submitError != null)
@@ -93,13 +124,12 @@
             }
             else
             {
-                <span>Save bank account</span>
+                <span>Save bank details</span>
             }
         </button>
 
-        <p class="bank-setup-note">
+        <p class="bank-note">
             Your bank details are sent directly to Paystack and are never stored on NEO servers.
-            Paystack may take 1–3 business days to verify your account before settlements begin.
         </p>
     }
 </div>
@@ -113,24 +143,16 @@
         margin: 0 auto;
     }
 
-    .bank-setup-intro {
+    .bank-intro {
         font-size: var(--text-sm);
         color: var(--color-text-secondary);
         margin-bottom: var(--space-6);
         line-height: var(--leading-relaxed);
     }
 
-    .bank-setup-note {
-        font-size: var(--text-xs);
-        color: var(--color-text-disabled);
-        margin-top: var(--space-4);
-        line-height: var(--leading-relaxed);
-        text-align: center;
-    }
-
-    select {
+    .form-select {
         width: 100%;
-        padding: var(--space-3) var(--space-3);
+        padding: var(--space-3);
         border: 1.5px solid var(--color-border);
         border-radius: var(--radius-md);
         background: var(--color-surface);
@@ -141,14 +163,42 @@
         appearance: auto;
     }
 
-    select:focus {
+    .form-select:focus {
         outline: 2px solid var(--color-primary);
         outline-offset: 2px;
         border-color: var(--color-primary);
     }
 
-    select.input--error {
-        border-color: var(--color-danger);
+    .form-select.input--error { border-color: var(--color-danger); }
+
+    .radio-group {
+        display: flex;
+        gap: var(--space-6);
+        margin-top: var(--space-1);
+    }
+
+    .radio-label {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        font-size: var(--text-base);
+        color: var(--color-text-primary);
+        cursor: pointer;
+        min-height: 44px;
+    }
+
+    .radio-label input[type="radio"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--color-primary);
+        cursor: pointer;
+    }
+
+    .field-hint {
+        font-size: var(--text-xs);
+        font-weight: var(--weight-regular);
+        color: var(--color-success);
+        margin-left: var(--space-2);
     }
 
     .error-banner {
@@ -159,6 +209,14 @@
         font-size: var(--text-sm);
         margin-bottom: var(--space-4);
     }
+
+    .bank-note {
+        font-size: var(--text-xs);
+        color: var(--color-text-disabled);
+        margin-top: var(--space-4);
+        line-height: var(--leading-relaxed);
+        text-align: center;
+    }
 </style>
 
 @code {
@@ -166,6 +224,8 @@
     string _bankCode = "";
     string _accountNumber = "";
     string _accountHolderName = "";
+    string _accountType = "cheque";
+    string _branchCode = "";
 
     string? _bankCodeError;
     string? _accountNumberError;
@@ -177,6 +237,35 @@
     bool _saving;
 
     Toast? _toast;
+
+    // Universal branch codes for major SA banks — matched by bank name substring
+    static readonly (string Contains, string Code)[] BranchCodeMap =
+    [
+        ("ABSA", "632005"),
+        ("FIRST NATIONAL", "250655"),
+        ("FNB", "250655"),
+        ("STANDARD BANK", "051001"),
+        ("NEDBANK", "198765"),
+        ("CAPITEC", "470010"),
+        ("DISCOVERY", "679000"),
+        ("INVESTEC", "580105"),
+        ("AFRICAN BANK", "430000"),
+        ("TYME", "678910"),
+        ("BIDVEST", "462005"),
+        ("BANK ZERO", "888000"),
+        ("GRINDROD", "223626"),
+        ("SASFIN", "683000"),
+        ("OLD MUTUAL", "462005"),
+        ("POSTBANK", "460005"),
+    ];
+
+    static string LookupBranchCode(string bankName)
+    {
+        var upper = bankName.ToUpperInvariant();
+        foreach (var (contains, code) in BranchCodeMap)
+            if (upper.Contains(contains)) return code;
+        return "";
+    }
 
     protected override async Task OnInitializedAsync() => await LoadBanksAsync();
 
@@ -202,6 +291,9 @@
     {
         _bankCode = e.Value?.ToString() ?? "";
         _bankCodeError = null;
+
+        var selected = _banks.FirstOrDefault(b => b.Code == _bankCode);
+        _branchCode = selected != null ? LookupBranchCode(selected.Name) : "";
     }
 
     async Task SaveAsync()
@@ -212,29 +304,25 @@
         _submitError = null;
 
         var valid = true;
-        if (string.IsNullOrWhiteSpace(_bankCode))
-        {
-            _bankCodeError = "Please select your bank.";
-            valid = false;
-        }
-        if (string.IsNullOrWhiteSpace(_accountNumber))
-        {
-            _accountNumberError = "Account number is required.";
-            valid = false;
-        }
         if (string.IsNullOrWhiteSpace(_accountHolderName))
-        {
-            _accountHolderError = "Account holder name is required.";
-            valid = false;
-        }
+        { _accountHolderError = "Account holder name is required."; valid = false; }
+        if (string.IsNullOrWhiteSpace(_bankCode))
+        { _bankCodeError = "Please select your bank."; valid = false; }
+        if (string.IsNullOrWhiteSpace(_accountNumber))
+        { _accountNumberError = "Account number is required."; valid = false; }
         if (!valid) return;
 
         _saving = true;
         try
         {
-            await Api.RegisterBankAsync(_bankCode, _accountNumber.Trim(), _accountHolderName.Trim());
+            await Api.RegisterBankAsync(
+                _bankCode,
+                _accountNumber.Trim(),
+                _accountHolderName.Trim(),
+                _accountType);
+
             if (_toast != null)
-                await _toast.Show("✓ Bank account saved");
+                await _toast.Show("✓ Bank details saved");
             await Task.Delay(1200);
             GoBack();
         }

@@ -89,6 +89,7 @@ public class PaymentsController : ControllerBase
                 user.Name,
                 req.BankCode,
                 req.AccountNumber,
+                req.AccountType,
                 user.PaystackSubaccountCode);
 
             user.PaystackSubaccountCode = subaccountCode;
@@ -311,4 +312,5 @@ public record InitializePaymentRequest(
 public record RegisterBankRequest(
     string BankCode,
     string AccountNumber,
-    string AccountHolderName);
+    string AccountHolderName,
+    string? AccountType);

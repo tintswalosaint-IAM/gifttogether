@@ -4,6 +4,26 @@
 @inject AuthState Auth
 @inject NavigationManager Nav
 
+@if (_showBankBanner)
+{
+    <div class="bank-banner" role="alert">
+        <div class="bank-banner-body">
+            <span class="bank-banner-icon">🏦</span>
+            <div>
+                <div class="bank-banner-title">Add your bank details to receive payouts</div>
+                <div class="bank-banner-sub">Contributors can pay, but funds won't reach you until your bank is connected.</div>
+            </div>
+        </div>
+        <div class="bank-banner-actions">
+            <button class="btn btn--primary btn--sm" @onclick='() => Nav.NavigateTo("/settings/bank")'>
+                Set up now
+            </button>
+            <button class="btn btn--ghost btn--sm bank-banner-dismiss"
+                    @onclick="DismissBankBanner" aria-label="Dismiss">✕</button>
+        </div>
+    </div>
+}
+
 <TopBar>
     <RightContent>
         <div style="position: relative;">
@@ -168,6 +188,53 @@
     .avatar-menu-item:hover {
         background: var(--color-background);
     }
+
+    .bank-banner {
+        background: var(--color-primary-light);
+        border-left: 4px solid var(--color-primary);
+        padding: var(--space-3) var(--space-4);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+    }
+
+    .bank-banner-body {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-3);
+    }
+
+    .bank-banner-icon {
+        font-size: 1.25rem;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .bank-banner-title {
+        font-size: var(--text-sm);
+        font-weight: var(--weight-semibold);
+        color: var(--color-primary-dark);
+    }
+
+    .bank-banner-sub {
+        font-size: var(--text-xs);
+        color: var(--color-primary);
+        margin-top: var(--space-1);
+        line-height: var(--leading-relaxed);
+    }
+
+    .bank-banner-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding-left: calc(1.25rem + var(--space-3));
+    }
+
+    .bank-banner-dismiss {
+        margin-left: auto;
+        color: var(--color-primary);
+        opacity: 0.7;
+    }
 </style>
 
 @code {
@@ -175,6 +242,7 @@
     string? _error;
     bool _loading = true;
     bool _showMenu = false;
+    bool _showBankBanner = false;
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -185,7 +253,12 @@
         _showMenu = false;
         try
         {
-            _registries = await Api.GetMyRegistriesAsync();
+            var registriesTask = Api.GetMyRegistriesAsync();
+            var profileTask = Api.GetProfileAsync();
+            await Task.WhenAll(registriesTask, profileTask);
+
+            _registries = registriesTask.Result;
+            _showBankBanner = !profileTask.Result.HasBankAccount;
         }
         catch (Exception ex)
         {
@@ -196,6 +269,8 @@
             _loading = false;
         }
     }
+
+    void DismissBankBanner() => _showBankBanner = false;
 
     void GoToRegistry(RegistryResponse r) => Nav.NavigateTo($"/registry/{r.Id}");
 

@@ -201,11 +201,12 @@ public class ApiService
         return await ReadOrThrow<List<PaystackBankResponse>>(res);
     }
 
-    public async Task RegisterBankAsync(string bankCode, string accountNumber, string accountHolderName)
+    public async Task RegisterBankAsync(
+        string bankCode, string accountNumber, string accountHolderName, string accountType)
     {
         SetAuthHeader();
         var res = await _http.PostAsJsonAsync("/api/payments/register-bank",
-            new { bankCode, accountNumber, accountHolderName }, JsonOpts);
+            new { bankCode, accountNumber, accountHolderName, accountType }, JsonOpts);
         if (!res.IsSuccessStatusCode) throw new Exception(await GetError(res));
     }
 
