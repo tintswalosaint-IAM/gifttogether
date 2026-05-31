@@ -65,10 +65,12 @@ public class ApiService
     // - Windows app / emulator: http://localhost:5150
     // - Real Android device on same WiFi: http://10.191.130.84:5150
     // - Deployed on Render: https://your-app.onrender.com
-#if ANDROID
+#if DEBUG && ANDROID
     public const string BaseUrl = "http://10.191.130.84:5150";
-#else
+#elif DEBUG
     public const string BaseUrl = "http://localhost:5150";
+#else
+    public const string BaseUrl = "https://gifttogether.onrender.com";
 #endif
 
     private static readonly JsonSerializerOptions JsonOpts = new()
