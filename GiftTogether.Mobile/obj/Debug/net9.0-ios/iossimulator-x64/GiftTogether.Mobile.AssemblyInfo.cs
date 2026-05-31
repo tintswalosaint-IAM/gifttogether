@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GiftTogether.Mobile")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0+5490564e58453fb373549556d83fdc7b7c6d8b44")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0+b55bd36118f533bc11cf592edd74d9c2cb060d63")]
 [assembly: System.Reflection.AssemblyProductAttribute("GiftTogether.Mobile")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GiftTogether.Mobile")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

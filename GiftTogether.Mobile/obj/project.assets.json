@@ -34087,11 +34087,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\GiftTogether.Mobile.csproj",
+      "projectUniqueName": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile\\GiftTogether.Mobile.csproj",
       "projectName": "GiftTogether.Mobile",
-      "projectPath": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\GiftTogether.Mobile.csproj",
+      "projectPath": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile\\GiftTogether.Mobile.csproj",
       "packagesPath": "C:\\Users\\A249228\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\obj\\",
+      "outputPath": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile\\obj\\",
       "projectStyle": "PackageReference",
       "crossTargeting": true,
       "fallbackFolders": [

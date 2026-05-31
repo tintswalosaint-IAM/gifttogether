@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile.Tests\\GiftTogether.Mobile.Tests.csproj": {}
+    "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile.Tests\\GiftTogether.Mobile.Tests.csproj": {}
   },
   "projects": {
-    "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile.Tests\\GiftTogether.Mobile.Tests.csproj": {
+    "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile.Tests\\GiftTogether.Mobile.Tests.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile.Tests\\GiftTogether.Mobile.Tests.csproj",
+        "projectUniqueName": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile.Tests\\GiftTogether.Mobile.Tests.csproj",
         "projectName": "GiftTogether.Mobile.Tests",
-        "projectPath": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile.Tests\\GiftTogether.Mobile.Tests.csproj",
+        "projectPath": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile.Tests\\GiftTogether.Mobile.Tests.csproj",
         "packagesPath": "C:\\Users\\A249228\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile.Tests\\obj\\",
+        "outputPath": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile.Tests\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile.Tests\\NuGet.Config",
+          "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile.Tests\\NuGet.Config",
           "C:\\Users\\A249228\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"

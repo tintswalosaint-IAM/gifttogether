@@ -1,59 +1,59 @@
 {
   "Files": [
     {
-      "Id": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\obj\\Debug\\net9.0-windows10.0.19041.0\\win10-x64\\scopedcss\\bundle\\GiftTogether.Mobile.styles.css",
+      "Id": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile\\obj\\Debug\\net9.0-windows10.0.19041.0\\win10-x64\\scopedcss\\bundle\\GiftTogether.Mobile.styles.css",
       "PackagePath": "staticwebassets\\GiftTogether.Mobile.styles.css"
     },
     {
-      "Id": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\css\\animations.css",
+      "Id": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile\\wwwroot\\css\\animations.css",
       "PackagePath": "staticwebassets\\css\\animations.css"
     },
     {
-      "Id": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\css\\app.css",
+      "Id": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile\\wwwroot\\css\\app.css",
       "PackagePath": "staticwebassets\\css\\app.css"
     },
     {
-      "Id": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\css\\base.css",
+      "Id": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile\\wwwroot\\css\\base.css",
       "PackagePath": "staticwebassets\\css\\base.css"
     },
     {
-      "Id": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\css\\bootstrap\\bootstrap.min.css",
+      "Id": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile\\wwwroot\\css\\bootstrap\\bootstrap.min.css",
       "PackagePath": "staticwebassets\\css\\bootstrap\\bootstrap.min.css"
     },
     {
-      "Id": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\css\\bootstrap\\bootstrap.min.css.map",
+      "Id": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile\\wwwroot\\css\\bootstrap\\bootstrap.min.css.map",
       "PackagePath": "staticwebassets\\css\\bootstrap\\bootstrap.min.css.map"
     },
     {
-      "Id": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\css\\components.css",
+      "Id": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile\\wwwroot\\css\\components.css",
       "PackagePath": "staticwebassets\\css\\components.css"
     },
     {
-      "Id": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\css\\dark.css",
+      "Id": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile\\wwwroot\\css\\dark.css",
       "PackagePath": "staticwebassets\\css\\dark.css"
     },
     {
-      "Id": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\css\\tokens.css",
+      "Id": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile\\wwwroot\\css\\tokens.css",
       "PackagePath": "staticwebassets\\css\\tokens.css"
     },
     {
-      "Id": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\images\\onboarding\\onboard-1.png",
+      "Id": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile\\wwwroot\\images\\onboarding\\onboard-1.png",
       "PackagePath": "staticwebassets\\images\\onboarding\\onboard-1.png"
     },
     {
-      "Id": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\images\\onboarding\\onboard-2.png",
+      "Id": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile\\wwwroot\\images\\onboarding\\onboard-2.png",
       "PackagePath": "staticwebassets\\images\\onboarding\\onboard-2.png"
     },
     {
-      "Id": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\images\\onboarding\\onboard-3.png",
+      "Id": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile\\wwwroot\\images\\onboarding\\onboard-3.png",
       "PackagePath": "staticwebassets\\images\\onboarding\\onboard-3.png"
     },
     {
-      "Id": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\images\\onboarding\\onboard-4.png",
+      "Id": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile\\wwwroot\\images\\onboarding\\onboard-4.png",
       "PackagePath": "staticwebassets\\images\\onboarding\\onboard-4.png"
     },
     {
-      "Id": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\wwwroot\\index.html",
+      "Id": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile\\wwwroot\\index.html",
       "PackagePath": "staticwebassets\\index.html"
     },
     {

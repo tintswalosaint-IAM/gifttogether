@@ -1,0 +1,252 @@
+@page "/settings/bank"
+@inject ApiService Api
+@inject NavigationManager Nav
+
+<TopBar ShowBack="true" OnBack="GoBack" Title="Bank account" />
+
+<div class="page-content">
+    @if (_loadingBanks)
+    {
+        <div class="skeleton skeleton--text" style="height: 48px; margin-bottom: var(--space-4);"></div>
+        <div class="skeleton skeleton--text" style="height: 48px; margin-bottom: var(--space-4);"></div>
+        <div class="skeleton skeleton--text" style="height: 48px; margin-bottom: var(--space-6);"></div>
+    }
+    else if (_loadError != null)
+    {
+        <div class="error-state">
+            <p>@_loadError</p>
+            <button class="btn btn--primary" @onclick="LoadBanksAsync">Try again</button>
+        </div>
+    }
+    else
+    {
+        <p class="bank-setup-intro">
+            Add your bank account so contributors can pay directly into your account.
+        </p>
+
+        <div class="form-group">
+            <label for="bank-name">Bank name <span aria-hidden="true">*</span></label>
+            <select id="bank-name"
+                    class="@(_bankCodeError != null ? "input--error" : "")"
+                    value="@_bankCode"
+                    @onchange="OnBankChanged"
+                    aria-required="true"
+                    aria-describedby="@(_bankCodeError != null ? "bank-name-error" : null)">
+                <option value="">Select your bank…</option>
+                @foreach (var bank in _banks)
+                {
+                    <option value="@bank.Code">@bank.Name</option>
+                }
+            </select>
+            @if (_bankCodeError != null)
+            {
+                <span id="bank-name-error" class="field-error" role="alert">⚠ @_bankCodeError</span>
+            }
+        </div>
+
+        <div class="form-group">
+            <label for="account-number">Account number <span aria-hidden="true">*</span></label>
+            <input id="account-number"
+                   type="tel"
+                   inputmode="numeric"
+                   placeholder="e.g. 1234567890"
+                   @bind="_accountNumber"
+                   @bind:event="oninput"
+                   class="@(_accountNumberError != null ? "input--error" : "")"
+                   aria-required="true"
+                   aria-describedby="@(_accountNumberError != null ? "account-number-error" : null)" />
+            @if (_accountNumberError != null)
+            {
+                <span id="account-number-error" class="field-error" role="alert">⚠ @_accountNumberError</span>
+            }
+        </div>
+
+        <div class="form-group">
+            <label for="account-holder">Account holder name <span aria-hidden="true">*</span></label>
+            <input id="account-holder"
+                   type="text"
+                   placeholder="e.g. Jane Dlamini"
+                   @bind="_accountHolderName"
+                   @bind:event="oninput"
+                   class="@(_accountHolderError != null ? "input--error" : "")"
+                   aria-required="true"
+                   aria-describedby="@(_accountHolderError != null ? "account-holder-error" : null)" />
+            @if (_accountHolderError != null)
+            {
+                <span id="account-holder-error" class="field-error" role="alert">⚠ @_accountHolderError</span>
+            }
+        </div>
+
+        @if (_submitError != null)
+        {
+            <div class="error-banner" role="alert">@_submitError</div>
+        }
+
+        <button class="btn btn--primary btn--full"
+                @onclick="SaveAsync"
+                disabled="@_saving"
+                aria-busy="@_saving">
+            @if (_saving)
+            {
+                <span class="btn-spinner" aria-hidden="true"></span>
+                <span>Saving…</span>
+            }
+            else
+            {
+                <span>Save bank account</span>
+            }
+        </button>
+
+        <p class="bank-setup-note">
+            Your bank details are sent directly to Paystack and are never stored on NEO servers.
+            Paystack may take 1–3 business days to verify your account before settlements begin.
+        </p>
+    }
+</div>
+
+<Toast @ref="_toast" />
+
+<style>
+    .page-content {
+        padding: var(--space-6) var(--space-4);
+        max-width: 480px;
+        margin: 0 auto;
+    }
+
+    .bank-setup-intro {
+        font-size: var(--text-sm);
+        color: var(--color-text-secondary);
+        margin-bottom: var(--space-6);
+        line-height: var(--leading-relaxed);
+    }
+
+    .bank-setup-note {
+        font-size: var(--text-xs);
+        color: var(--color-text-disabled);
+        margin-top: var(--space-4);
+        line-height: var(--leading-relaxed);
+        text-align: center;
+    }
+
+    select {
+        width: 100%;
+        padding: var(--space-3) var(--space-3);
+        border: 1.5px solid var(--color-border);
+        border-radius: var(--radius-md);
+        background: var(--color-surface);
+        color: var(--color-text-primary);
+        font-size: var(--text-base);
+        font-family: inherit;
+        min-height: 44px;
+        appearance: auto;
+    }
+
+    select:focus {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+        border-color: var(--color-primary);
+    }
+
+    select.input--error {
+        border-color: var(--color-danger);
+    }
+
+    .error-banner {
+        background: var(--color-danger-bg, #fff0f0);
+        color: var(--color-danger);
+        border-radius: var(--radius-md);
+        padding: var(--space-3) var(--space-4);
+        font-size: var(--text-sm);
+        margin-bottom: var(--space-4);
+    }
+</style>
+
+@code {
+    List<PaystackBankResponse> _banks = [];
+    string _bankCode = "";
+    string _accountNumber = "";
+    string _accountHolderName = "";
+
+    string? _bankCodeError;
+    string? _accountNumberError;
+    string? _accountHolderError;
+    string? _submitError;
+    string? _loadError;
+
+    bool _loadingBanks = true;
+    bool _saving;
+
+    Toast? _toast;
+
+    protected override async Task OnInitializedAsync() => await LoadBanksAsync();
+
+    async Task LoadBanksAsync()
+    {
+        _loadingBanks = true;
+        _loadError = null;
+        try
+        {
+            _banks = await Api.GetBanksAsync();
+        }
+        catch (Exception ex)
+        {
+            _loadError = $"Could not load bank list: {ex.Message}";
+        }
+        finally
+        {
+            _loadingBanks = false;
+        }
+    }
+
+    void OnBankChanged(ChangeEventArgs e)
+    {
+        _bankCode = e.Value?.ToString() ?? "";
+        _bankCodeError = null;
+    }
+
+    async Task SaveAsync()
+    {
+        _bankCodeError = null;
+        _accountNumberError = null;
+        _accountHolderError = null;
+        _submitError = null;
+
+        var valid = true;
+        if (string.IsNullOrWhiteSpace(_bankCode))
+        {
+            _bankCodeError = "Please select your bank.";
+            valid = false;
+        }
+        if (string.IsNullOrWhiteSpace(_accountNumber))
+        {
+            _accountNumberError = "Account number is required.";
+            valid = false;
+        }
+        if (string.IsNullOrWhiteSpace(_accountHolderName))
+        {
+            _accountHolderError = "Account holder name is required.";
+            valid = false;
+        }
+        if (!valid) return;
+
+        _saving = true;
+        try
+        {
+            await Api.RegisterBankAsync(_bankCode, _accountNumber.Trim(), _accountHolderName.Trim());
+            if (_toast != null)
+                await _toast.Show("✓ Bank account saved");
+            await Task.Delay(1200);
+            GoBack();
+        }
+        catch (Exception ex)
+        {
+            _submitError = ex.Message;
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    void GoBack() => Nav.NavigateTo("/");
+}

@@ -164,7 +164,8 @@ public class AuthController : ControllerBase
             user.Name,
             user.Email,
             user.ProfileImageUrl,
-            user.GuestMessage
+            user.GuestMessage,
+            hasBankAccount = user.PaystackSubaccountCode != null
         });
     }
 }

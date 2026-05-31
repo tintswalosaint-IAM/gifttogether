@@ -47,6 +47,13 @@ public record PaymentVerifyResponse(
     string? Reference,
     decimal TotalRaised);
 
+public record UserProfileResponse(
+    int Id, string Name, string Email,
+    string? ProfileImageUrl, string? GuestMessage,
+    bool HasBankAccount);
+
+public record PaystackBankResponse(string Name, string Code);
+
 // ── API Service ───────────────────────────────────────────────────────────────
 
 public class ApiService
@@ -188,6 +195,20 @@ public class ApiService
         return await ReadOrThrow<PaymentInitResponse>(res);
     }
 
+    public async Task<List<PaystackBankResponse>> GetBanksAsync()
+    {
+        var res = await _http.GetAsync("/api/payments/banks");
+        return await ReadOrThrow<List<PaystackBankResponse>>(res);
+    }
+
+    public async Task RegisterBankAsync(string bankCode, string accountNumber, string accountHolderName)
+    {
+        SetAuthHeader();
+        var res = await _http.PostAsJsonAsync("/api/payments/register-bank",
+            new { bankCode, accountNumber, accountHolderName }, JsonOpts);
+        if (!res.IsSuccessStatusCode) throw new Exception(await GetError(res));
+    }
+
     public async Task<PaymentVerifyResponse> VerifyPaymentAsync(string reference)
     {
         var res = await _http.PostAsync($"/api/payments/verify/{Uri.EscapeDataString(reference)}", null);
@@ -195,6 +216,13 @@ public class ApiService
     }
 
     // ── Profile ───────────────────────────────────────────────────────────────
+
+    public async Task<UserProfileResponse> GetProfileAsync()
+    {
+        SetAuthHeader();
+        var res = await _http.GetAsync("/api/auth/profile");
+        return await ReadOrThrow<UserProfileResponse>(res);
+    }
 
     public async Task UpdateGuestMessageAsync(string guestMessage)
     {

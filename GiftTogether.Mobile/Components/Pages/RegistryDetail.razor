@@ -68,10 +68,10 @@ else if (_registry != null)
             <span>@_registry.GiftGoals.Count goal@(_registry.GiftGoals.Count != 1 ? "s" : "")</span>
         </div>
         <div class="share-row">
-            <button class="btn btn--outline btn--sm" @onclick="() => CopyLink(shareUrl)">
+            <button class="btn btn--outline btn--sm" @onclick="() => TryShare(shareUrl, ShareMode.CopyLink)">
                 🔗 Copy link
             </button>
-            <button class="btn btn--whatsapp btn--sm" @onclick="() => ShareWhatsApp(shareUrl)">
+            <button class="btn btn--whatsapp btn--sm" @onclick="() => TryShare(shareUrl, ShareMode.WhatsApp)">
                 💬 WhatsApp
             </button>
         </div>
@@ -93,6 +93,24 @@ else if (_registry != null)
         }
     </div>
 }
+
+<!-- Bank setup prompt bottom sheet -->
+<BottomSheet IsOpen="_showBankPrompt" OnClose="() => _showBankPrompt = false" Title="Set up your bank account">
+    <ChildContent>
+        <p class="sheet-confirm-message">
+            Contributors won't be able to pay until you connect a bank account.
+            It only takes a minute.
+        </p>
+        <div class="sheet-actions">
+            <button class="btn btn--primary btn--full" @onclick="GoToBankSetup">
+                Set up bank account
+            </button>
+            <button class="btn btn--outline btn--full" @onclick="ShareAnyway">
+                Share anyway
+            </button>
+        </div>
+    </ChildContent>
+</BottomSheet>
 
 <!-- Add goal bottom sheet -->
 <BottomSheet IsOpen="_showAddGoal" OnClose="CloseModals" Title="Add a gift goal">
@@ -238,12 +256,19 @@ else if (_registry != null)
     bool _loading = true;
     bool _showAddGoal;
     bool _showDeleteGoal;
+    bool _showBankPrompt;
     bool _actionLoading;
+    bool _hasBankAccount;
     GiftGoalResponse? _goalToDelete;
     string _goalName = "", _goalDesc = "", _goalLink = "";
     decimal _goalAmount;
     string? _goalNameError, _goalAmountError;
     Toast? _toast;
+
+    // Pending share action stored while bank prompt is open
+    string? _pendingShareUrl;
+    ShareMode _pendingShareMode;
+    enum ShareMode { CopyLink, WhatsApp }
 
     // Image picker state
     Stream? _pickedImageStream;
@@ -279,10 +304,15 @@ else if (_registry != null)
         _error = null;
         try
         {
-            var all = await Api.GetMyRegistriesAsync();
-            _registry = all.FirstOrDefault(r => r.Id == Id);
+            var registriesTask = Api.GetMyRegistriesAsync();
+            var profileTask = Api.GetProfileAsync();
+            await Task.WhenAll(registriesTask, profileTask);
+
+            _registry = registriesTask.Result.FirstOrDefault(r => r.Id == Id);
             if (_registry == null)
                 _error = "Registry not found.";
+
+            _hasBankAccount = profileTask.Result.HasBankAccount;
         }
         catch (Exception ex)
         {
@@ -533,9 +563,37 @@ else if (_registry != null)
         }
     }
 
-    async Task CopyLink(string url) =>
-        await JS.InvokeVoidAsync("copyToClipboard", url);
+    void TryShare(string url, ShareMode mode)
+    {
+        if (!_hasBankAccount)
+        {
+            _pendingShareUrl = url;
+            _pendingShareMode = mode;
+            _showBankPrompt = true;
+            return;
+        }
+        _ = ExecuteShareAsync(url, mode);
+    }
 
-    async Task ShareWhatsApp(string url) =>
-        await JS.InvokeVoidAsync("shareWhatsApp", url);
+    void GoToBankSetup()
+    {
+        _showBankPrompt = false;
+        Nav.NavigateTo("/settings/bank");
+    }
+
+    async Task ShareAnyway()
+    {
+        _showBankPrompt = false;
+        if (_pendingShareUrl != null)
+            await ExecuteShareAsync(_pendingShareUrl, _pendingShareMode);
+        _pendingShareUrl = null;
+    }
+
+    async Task ExecuteShareAsync(string url, ShareMode mode)
+    {
+        if (mode == ShareMode.CopyLink)
+            await JS.InvokeVoidAsync("copyToClipboard", url);
+        else
+            await JS.InvokeVoidAsync("shareWhatsApp", url);
+    }
 }

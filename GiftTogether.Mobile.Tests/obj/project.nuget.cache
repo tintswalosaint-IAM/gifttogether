@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "ZH0oBH/zVBQ=",
+  "dgSpecHash": "MtQFYSQ/5bg=",
   "success": true,
-  "projectFilePath": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile.Tests\\GiftTogether.Mobile.Tests.csproj",
+  "projectFilePath": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile.Tests\\GiftTogether.Mobile.Tests.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\A249228\\.nuget\\packages\\cscheck\\4.0.0\\cscheck.4.0.0.nupkg.sha512",
     "C:\\Users\\A249228\\.nuget\\packages\\microsoft.codecoverage\\17.14.1\\microsoft.codecoverage.17.14.1.nupkg.sha512",

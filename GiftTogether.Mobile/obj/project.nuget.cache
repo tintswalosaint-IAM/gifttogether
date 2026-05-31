@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "0mb25NmyOp4=",
+  "dgSpecHash": "0/1gzWW51uk=",
   "success": true,
-  "projectFilePath": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\GiftTogether.Mobile.csproj",
+  "projectFilePath": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile\\GiftTogether.Mobile.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\A249228\\.nuget\\packages\\googlegson\\2.13.0.1\\googlegson.2.13.0.1.nupkg.sha512",
     "C:\\Users\\A249228\\.nuget\\packages\\microsoft.aspnetcore.authorization\\9.0.9\\microsoft.aspnetcore.authorization.9.0.9.nupkg.sha512",
@@ -152,9 +152,9 @@
       "code": "NU1900",
       "level": "Warning",
       "message": "Error occurred while getting package vulnerability data: Unable to load the service index for source https://standardbank.pkgs.visualstudio.com/_packaging/Insurance.Packages/nuget/v3/index.json.",
-      "projectPath": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\GiftTogether.Mobile.csproj",
+      "projectPath": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile\\GiftTogether.Mobile.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Users\\A249228\\Downloads\\GiftTogether\\GiftTogether.Mobile\\GiftTogether.Mobile.csproj",
+      "filePath": "C:\\Users\\A249228\\source\\repos\\gifttogether\\GiftTogether.Mobile\\GiftTogether.Mobile.csproj",
       "targetGraphs": []
     }
   ]

@@ -1,0 +1,26 @@
+## Build output
+bin/
+obj/
+
+## SQLite database files
+*.db
+*.db-shm
+*.db-wal
+
+## Uploaded files
+wwwroot/uploads/*
+!wwwroot/uploads/.gitkeep
+
+## .NET secrets and local config
+appsettings.Development.json
+appsettings.local.json
+
+## OS
+.DS_Store
+Thumbs.db
+
+## VS / Rider
+.vs/
+.idea/
+*.user
+*.suo
