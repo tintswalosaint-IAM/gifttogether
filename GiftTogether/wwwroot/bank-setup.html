@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bank Account Setup – Neo GiftTogether</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    .bank-wrap { max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+    .bank-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 2rem 1.5rem;
+    }
+    .bank-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .bank-subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; line-height: 1.5; }
+    .bank-success {
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      color: #166534;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .bank-status {
+      background: #f0f9ff;
+      border: 1px solid #7dd3fc;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.88rem;
+      color: #0c4a6e;
+      margin-bottom: 1.5rem;
+    }
+    select.form-select {
+      width: 100%;
+      padding: 0.6rem 0.85rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      background: #fff;
+      color: var(--text);
+      appearance: auto;
+    }
+    select.form-select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="/">🎁 GiftTogether</a>
+  <div class="nav-links">
+    <a href="/dashboard.html">Dashboard</a>
+  </div>
+</nav>
+
+<div class="bank-wrap">
+  <div class="bank-card">
+    <h1 class="bank-title">💳 Bank Account Setup</h1>
+    <p class="bank-subtitle">
+      Link your bank account so contributions go directly to you. We never store your full bank details — only a secure reference with Paystack.
+    </p>
+
+    <!-- Current status -->
+    <div id="bankStatus" class="bank-status hidden"></div>
+
+    <!-- Success message -->
+    <div id="bankSuccess" class="bank-success hidden"></div>
+
+    <!-- Alert -->
+    <div id="bankAlert" class="alert hidden"></div>
+
+    <!-- Form -->
+    <form id="bankForm">
+      <div class="form-group">
+        <label for="bankSelect">Bank</label>
+        <select id="bankSelect" class="form-select" required>
+          <option value="">Loading banks…</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="accountNumber">Account number</label>
+        <input type="text" id="accountNumber" placeholder="e.g. 1234567890" required
+               pattern="[0-9]{6,20}" inputmode="numeric" />
+      </div>
+      <div class="form-group">
+        <label for="accountHolder">Account holder name</label>
+        <input type="text" id="accountHolder" placeholder="e.g. Jane Smith" required />
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;padding:0.7rem;font-size:1rem;" id="submitBtn">
+        Save bank account
+      </button>
+      <p class="text-muted text-center mt-1" style="font-size:0.78rem;">
+        🔒 Your bank details are sent directly to Paystack. Neo does not store them.
+      </p>
+    </form>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const user = Auth.requireAuth();
+
+  const bankSelect = document.getElementById('bankSelect');
+  const form = document.getElementById('bankForm');
+  const alertEl = document.getElementById('bankAlert');
+  const statusEl = document.getElementById('bankStatus');
+  const successEl = document.getElementById('bankSuccess');
+  const submitBtn = document.getElementById('submitBtn');
+
+  // Load bank list
+  async function loadBanks() {
+    try {
+      const res = await fetch('/api/payments/banks');
+      if (!res.ok) throw new Error('Failed to load banks');
+      const banks = await res.json();
+      bankSelect.innerHTML = '<option value="">— Select your bank —</option>';
+      banks.forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b.code;
+        opt.textContent = b.name;
+        bankSelect.appendChild(opt);
+      });
+    } catch (err) {
+      bankSelect.innerHTML = '<option value="">Failed to load banks</option>';
+      showAlert(alertEl, 'Could not load bank list. Please refresh the page.');
+    }
+  }
+
+  // Check if already registered
+  async function checkStatus() {
+    try {
+      const profile = await API.getProfile();
+      // The profile endpoint doesn't directly expose subaccount status,
+      // but if the user has a bank registered, the backend knows.
+      // For now, just load the form.
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // Submit
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideAlert(alertEl);
+    successEl.classList.add('hidden');
+
+    const bankCode = bankSelect.value;
+    const accountNumber = document.getElementById('accountNumber').value.trim();
+    const accountHolder = document.getElementById('accountHolder').value.trim();
+
+    if (!bankCode) { showAlert(alertEl, 'Please select a bank.'); return; }
+    if (!accountNumber) { showAlert(alertEl, 'Please enter your account number.'); return; }
+    if (!accountHolder) { showAlert(alertEl, 'Please enter the account holder name.'); return; }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner"></span> Saving…';
+
+    try {
+      const res = await fetch('/api/payments/register-bank', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('gt_token')}`
+        },
+        body: JSON.stringify({
+          bankCode: bankCode,
+          accountNumber: accountNumber,
+          accountHolderName: accountHolder
+        })
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `Request failed (${res.status})`);
+      }
+
+      successEl.textContent = '✓ Bank account linked successfully! Contributions will now go directly to you.';
+      successEl.classList.remove('hidden');
+      form.reset();
+    } catch (err) {
+      showAlert(alertEl, err.message);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Save bank account';
+    }
+  });
+
+  loadBanks();
+  checkStatus();
+</script>
+</body>
+</html>
